@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login y Registro</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="container" id="register-container">
+        <h2>Registro</h2>
+        <input type="text" id="reg-username" placeholder="Nombre de usuario" required>
+        <input type="password" id="reg-password" placeholder="Contraseña" required>
+        <button onclick="register()">Registrarse</button>
+        <p>¿Ya tienes una cuenta? <a href="inicio.html" onclick="showLogin()">Inicia sesión</a></p>
+    </div>
+
+    <div class="container" id="login-container" style="display: none;">
+        <h2>Inicio de Sesión</h2>
+        <input type="text" id="login-username" placeholder="Nombre de usuario" required>
+        <input type="password" id="login-password" placeholder="Contraseña" required>
+        <button onclick="login()">Iniciar Sesión</button>
+        <p>¿No tienes cuenta? <a href="#" onclick="showRegister()">Regístrate</a></p>
+    </div>
+
+    <script>
+        function showLogin() {
+            document.getElementById('register-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        }
+
+        function showRegister() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('register-container').style.display = 'block';
+        }
+
+        function register() {
+            let username = document.getElementById('reg-username').value;
+            let password = document.getElementById('reg-password').value;
+            
+            if (username && password) {
+                localStorage.setItem('username', username);
+                localStorage.setItem('password', password);
+                alert('Registro exitoso, ahora puedes iniciar sesión.');
+                showLogin();
+            } else {
+                alert('Por favor, completa todos los campos.');
+            }
+        }
+
+        function login() {
+            let username = document.getElementById('login-username').value;
+            let password = document.getElementById('login-password').value;
+            let storedUser = localStorage.getItem('username');
+            let storedPass = localStorage.getItem('password');
+            
+            if (username === storedUser && password === storedPass) {
+                alert('Inicio de sesión exitoso. Redirigiendo...');
+                window.location.href = 'index.html';
+            } else {
+                alert('Usuario o contraseña incorrectos.');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+/* Importar fuente personalizada */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+
+/* Estilos generales */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4; /* Fondo neutro */
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* Estilos del título */
+h1 {
+    margin: 20px 0;
+    font-size: 2.5em;
+    font-family: 'Playfair Display', serif; /* Fuente elegante */
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Contenedor de la galería */
+.galeria {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 30px;
+    transform: translateX(20px); /* Corrección de 20px a la derecha */
+}
+
+/* Estilos de las imágenes */
+.galeria img {
+    width: 200px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out, filter 0.3s ease;
+    animation: aparecer 0.8s ease-in-out forwards;
+    cursor: pointer;
+    filter: brightness(90%);
+    border: 3px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Efecto de agrandar imagen al pasar el mouse */
+.galeria img:hover {
+    transform: scale(1.2);
+    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.3);
+    filter: brightness(100%);
+    border: 3px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Animaciones por imagen */
+.galeria img:nth-child(1) { animation-delay: 0s; }
+.galeria img:nth-child(2) { animation-delay: 0.2s; }
+.galeria img:nth-child(3) { animation-delay: 0.4s; }
+.galeria img:nth-child(4) { animation-delay: 0.6s; }
+.galeria img:nth-child(5) { animation-delay: 0.8s; }
+
+/* Animación de aparición */
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
