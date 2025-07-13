@@ -3,6 +3,8 @@
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local head = character:WaitForChild("Head")
 
 local sharinganEvent = ReplicatedStorage:WaitForChild("SharinganEvent")
 
@@ -14,32 +16,37 @@ local sharinganStates = {
 }
 
 local currentSharinganState = 0
-local originalFace = ""
+
+local leftEye = Instance.new("Decal")
+leftEye.Name = "LeftSharingan"
+leftEye.Face = Enum.NormalId.Front
+leftEye.Position = Vector3.new(-0.2, 0, 0.5)
+leftEye.Size = Vector3.new(0.4, 0.4, 0.1)
+leftEye.Visible = false
+leftEye.Parent = head
+
+local rightEye = Instance.new("Decal")
+rightEye.Name = "RightSharingan"
+rightEye.Face = Enum.NormalId.Front
+rightEye.Position = Vector3.new(0.2, 0, 0.5)
+rightEye.Size = Vector3.new(0.4, 0.4, 0.1)
+rightEye.Visible = false
+rightEye.Parent = head
 
 local function setSharinganState(stateIndex)
-    local character = player.Character
-    if not character then return end
-
-    local head = character:FindFirstChild("Head")
-    if not head then return end
-
-    local face = head:FindFirstChildOfClass("Decal")
-    if not face then return end
-
     if stateIndex > 0 then
-        if originalFace == "" then
-            originalFace = face.Texture
-        end
         local state = sharinganStates[stateIndex]
-        face.Texture = state.texture
-        sharinganEvent:FireServer(state.texture)
+        leftEye.Texture = state.texture
+        rightEye.Texture = state.texture
+        leftEye.Visible = true
+        rightEye.Visible = true
+        sharinganEvent:FireServer(state.texture, true)
         print("Sharingan evolucionado a estado " .. stateIndex)
     else
-        if originalFace ~= "" then
-            face.Texture = originalFace
-            sharinganEvent:FireServer(originalFace)
-            print("Sharingan desactivado")
-        end
+        leftEye.Visible = false
+        rightEye.Visible = false
+        sharinganEvent:FireServer("", false)
+        print("Sharingan desactivado")
     end
     currentSharinganState = stateIndex
 end
