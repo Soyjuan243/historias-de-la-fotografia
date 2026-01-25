@@ -1,0 +1,343 @@
+import discord
+from discord import app_commands
+from discord.ext import commands
+import database
+import config
+import datetime
+
+class MyBot(commands.Bot):
+    def __init__(self):
+        intents = discord.Intents.default()
+        intents.members = True
+        intents.message_content = True
+        super().__init__(command_prefix="!", intents=intents)
+
+    async def setup_hook(self):
+        database.init_db()
+        await self.tree.sync()
+        print(f"Synced slash commands for {self.user}")
+
+bot = MyBot()
+
+# Helper to check roles
+def is_staff(interaction: discord.Interaction):
+    staff_roles = [config.ROLE_ALTO_MANDO, config.ROLE_ADMIN]
+    return any(role.name in staff_roles for role in interaction.user.roles)
+
+def is_developer(interaction: discord.Interaction):
+    return any(role.name == config.ROLE_DEVELOPER for role in interaction.user.roles)
+
+# Ticket Commands
+class TicketTypeSelect(discord.ui.Select):
+    def __init__(self):
+        options = [discord.SelectOption(label=t) for t in config.TICKET_TYPES]
+        super().__init__(placeholder="Selecciona el tipo de ticket", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(TicketDescriptionModal(self.values[0]))
+
+class TicketDescriptionModal(discord.ui.Modal, title="Descripción del Ticket"):
+    description = discord.ui.TextInput(label="Nombre corto o descripción inicial", style=discord.TextStyle.short)
+
+    def __init__(self, ticket_type):
+        super().__init__()
+        self.ticket_type = ticket_type
+
+    async def on_submit(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        user = interaction.user
+
+        # Check if developer
+        if is_developer(interaction):
+            await interaction.response.send_message("Los developers no pueden crear tickets.", ephemeral=True)
+            return
+
+        # Create channel
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            user: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+        }
+
+        # Add staff roles to overwrites
+        staff_roles = [r for r in guild.roles if r.name in [config.ROLE_ALTO_MANDO, config.ROLE_ADMIN]]
+        for role in staff_roles:
+            overwrites[role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
+
+        channel_name = f"ticket-{self.ticket_type.lower().replace(' ', '-')}-{self.description.value.lower().replace(' ', '-')}"
+        # Limit channel name length
+        channel_name = channel_name[:100]
+
+        channel = await guild.create_text_channel(name=channel_name, overwrites=overwrites)
+
+        # Save to DB
+        database.create_ticket(str(channel.id), self.ticket_type, str(user.id), self.description.value)
+        database.add_log(f"Ticket creado: {channel.name} por {user.display_name}")
+
+        await interaction.response.send_message(f"Ticket creado: {channel.mention}", ephemeral=True)
+
+        # Initial message
+        embed = discord.Embed(title=f"Nuevo Ticket: {self.ticket_type}", color=discord.Color.blue())
+        embed.add_field(name="Creador", value=user.mention)
+        embed.add_field(name="Descripción", value=self.description.value)
+        embed.add_field(name="Fecha", value=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+        ping_msg = ""
+        for role in staff_roles:
+            ping_msg += f"{role.mention} "
+
+        await channel.send(content=ping_msg, embed=embed)
+
+@bot.tree.command(name="crear_ticket", description="Crea un nuevo ticket de soporte o postulación")
+async def crear_ticket(interaction: discord.Interaction):
+    if is_developer(interaction):
+        await interaction.response.send_message("Los developers no pueden crear tickets.", ephemeral=True)
+        return
+
+    view = discord.ui.View()
+    view.add_item(TicketTypeSelect())
+    await interaction.response.send_message("Por favor selecciona el tipo de ticket:", view=view, ephemeral=True)
+
+@bot.tree.command(name="cerrar_ticket", description="Cierra el ticket actual")
+async def cerrar_ticket(interaction: discord.Interaction):
+    # Only staff or the creator can close? Prompt says "Solo Admins y Alto Mando tienen acceso inicial"
+    # and "El bot es la autoridad".
+    if not is_staff(interaction):
+        # Check if they are the creator
+        ticket = database.get_ticket(str(interaction.channel_id))
+        if not ticket or ticket[2] != str(interaction.user.id):
+            await interaction.response.send_message("No tienes permiso para cerrar este ticket.", ephemeral=True)
+            return
+
+    database.close_ticket(str(interaction.channel_id))
+    database.add_log(f"Ticket cerrado en canal {interaction.channel_id} por {interaction.user.display_name}")
+    await interaction.response.send_message("El ticket ha sido cerrado. El canal se eliminará en 5 segundos.")
+    await discord.utils.sleep_until(datetime.datetime.now() + datetime.timedelta(seconds=5))
+    await interaction.channel.delete()
+
+# Project Commands
+@bot.tree.command(name="registrar_proyecto", description="Registra un nuevo proyecto (Solo Staff)")
+@app_commands.describe(
+    nombre="Nombre del proyecto",
+    tipo="Tipo de proyecto",
+    cliente="Nombre del cliente",
+    prioridad="Prioridad del proyecto"
+)
+@app_commands.choices(tipo=[
+    app_commands.Choice(name=t, value=t) for t in config.PROJECT_TYPES
+], prioridad=[
+    app_commands.Choice(name=p, value=p) for p in config.PRIORITIES
+])
+async def registrar_proyecto(interaction: discord.Interaction, nombre: str, tipo: str, cliente: str, prioridad: str):
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede registrar proyectos.", ephemeral=True)
+        return
+
+    # Check if we are in a ticket channel to associate it
+    ticket_id = str(interaction.channel_id)
+    ticket = database.get_ticket(ticket_id)
+
+    project_id = database.create_project(nombre, tipo, cliente, prioridad, ticket_id if ticket else None)
+    database.add_log(f"Proyecto registrado: {nombre} (ID: {project_id}) por {interaction.user.display_name}")
+
+    await interaction.response.send_message(f"Proyecto **{nombre}** registrado con ID: {project_id}")
+
+@bot.tree.command(name="ver_proyectos", description="Muestra la lista de proyectos (Solo Staff)")
+async def ver_proyectos(interaction: discord.Interaction):
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede ver los proyectos.", ephemeral=True)
+        return
+
+    projects = database.get_projects()
+    if not projects:
+        await interaction.response.send_message("No hay proyectos registrados.")
+        return
+
+    embed = discord.Embed(title="Lista de Proyectos", color=discord.Color.green())
+    for p in projects:
+        # p = (id, name, type, client, priority, status, ticket_id)
+        embed.add_field(
+            name=f"ID: {p[0]} - {p[1]}",
+            value=f"Tipo: {p[2]}\nCliente: {p[3]}\nPrioridad: {p[4]}\nEstado: {p[5]}",
+            inline=False
+        )
+
+    await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(name="finalizar_proyecto", description="Marca un proyecto como finalizado (Solo Staff)")
+@app_commands.describe(project_id="ID del proyecto a finalizar")
+async def finalizar_proyecto(interaction: discord.Interaction, project_id: int):
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede finalizar proyectos.", ephemeral=True)
+        return
+
+    # Find project
+    conn = database.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
+    project = cursor.fetchone()
+    conn.close()
+
+    if not project:
+        await interaction.response.send_message(f"No se encontró el proyecto con ID {project_id}.", ephemeral=True)
+        return
+
+    database.update_project_status(project_id, "finalizado")
+    database.add_log(f"Proyecto finalizado: ID {project_id} por {interaction.user.display_name}")
+
+    dev_id = project[7] # assigned_dev
+    if dev_id:
+        database.update_dev_status(dev_id, 'disponible')
+        # Update roles if possible
+        try:
+            member = await interaction.guild.fetch_member(int(dev_id))
+            role_disponible = discord.utils.get(interaction.guild.roles, name=config.ROLE_DISPONIBLE)
+            role_ocupado = discord.utils.get(interaction.guild.roles, name=config.ROLE_OCUPADO)
+            if role_disponible and role_ocupado:
+                await member.add_roles(role_disponible)
+                await member.remove_roles(role_ocupado)
+        except Exception as e:
+            print(f"Error actualizando roles para el dev {dev_id}: {e}")
+
+    await interaction.response.send_message(f"Proyecto **{project[1]}** marcado como finalizado y desarrollador liberado.")
+
+# Developer Commands
+@bot.tree.command(name="registrar_dev", description="Registra a un nuevo desarrollador en la base de datos")
+@app_commands.describe(dev="El usuario a registrar")
+async def registrar_dev(interaction: discord.Interaction, dev: discord.Member):
+    # Only staff can register others? Or devs can register themselves?
+    # Spec says "/registrar_dev" under "Developers" category.
+    # Usually staff registers devs.
+    if not is_staff(interaction) and interaction.user.id != dev.id:
+        await interaction.response.send_message("No tienes permiso para registrar a este desarrollador.", ephemeral=True)
+        return
+
+    database.register_dev(str(dev.id), dev.display_name)
+    await interaction.response.send_message(f"Desarrollador {dev.mention} registrado exitosamente.")
+
+@bot.tree.command(name="asignar_dev", description="Asigna un desarrollador a un proyecto (Solo Staff)")
+@app_commands.describe(dev="El desarrollador", project_id="ID del proyecto")
+async def asignar_dev(interaction: discord.Interaction, dev: discord.Member, project_id: int):
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede asignar desarrolladores.", ephemeral=True)
+        return
+
+    # Check if dev is in DB
+    dev_data = database.get_dev(str(dev.id))
+    if not dev_data:
+        await interaction.response.send_message(f"{dev.mention} no está registrado como desarrollador.", ephemeral=True)
+        return
+
+    # Check if dev is available
+    if dev_data[2] != 'disponible' or not dev_data[3]: # status, active
+        await interaction.response.send_message(f"{dev.mention} no está disponible o no está activo.", ephemeral=True)
+        return
+
+    # Find project
+    conn = database.get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
+    project = cursor.fetchone()
+    conn.close()
+
+    if not project:
+        await interaction.response.send_message(f"No se encontró el proyecto con ID {project_id}.", ephemeral=True)
+        return
+
+    # Assign
+    database.assign_dev_to_project(project_id, str(dev.id))
+    database.update_dev_status(str(dev.id), 'ocupado')
+    database.update_project_status(project_id, 'en curso')
+    database.add_log(f"Dev {dev.display_name} asignado al proyecto ID {project_id}")
+
+    # Update Roles
+    try:
+        role_disponible = discord.utils.get(interaction.guild.roles, name=config.ROLE_DISPONIBLE)
+        role_ocupado = discord.utils.get(interaction.guild.roles, name=config.ROLE_OCUPADO)
+        if role_disponible and role_ocupado:
+            await dev.add_roles(role_ocupado)
+            await dev.remove_roles(role_disponible)
+    except Exception as e:
+        print(f"Error actualizando roles para {dev.display_name}: {e}")
+
+    # Add to ticket if exists
+    ticket_id = project[6] # ticket_id
+    if ticket_id:
+        channel = interaction.guild.get_channel(int(ticket_id))
+        if channel:
+            await channel.set_permissions(dev, read_messages=True, send_messages=True)
+            await channel.send(f"Hola {dev.mention}, has sido asignado a este proyecto.")
+
+    await interaction.response.send_message(f"{dev.mention} ha sido asignado al proyecto **{project[1]}**.")
+
+@bot.tree.command(name="perfil_dev", description="Muestra el perfil de un desarrollador")
+@app_commands.describe(dev="El desarrollador")
+async def perfil_dev(interaction: discord.Interaction, dev: discord.Member):
+    dev_data = database.get_dev(str(dev.id))
+    if not dev_data:
+        await interaction.response.send_message(f"{dev.mention} no está registrado como desarrollador.", ephemeral=True)
+        return
+
+    # dev_data = (discord_id, username, status, active, strikes)
+    embed = discord.Embed(title=f"Perfil de {dev_data[1]}", color=discord.Color.blue())
+    embed.add_field(name="Estado", value=dev_data[2].capitalize())
+    embed.add_field(name="Activo", value="Sí" if dev_data[3] else "No")
+    embed.add_field(name="Strikes", value=str(dev_data[4]))
+
+    await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(name="devs_disponibles", description="Lista los desarrolladores disponibles")
+async def devs_disponibles(interaction: discord.Interaction):
+    devs = database.get_available_devs()
+    if not devs:
+        await interaction.response.send_message("No hay desarrolladores disponibles en este momento.")
+        return
+
+    content = "### Desarrolladores Disponibles:\n"
+    for d in devs:
+        content += f"- <@{d[0]}> ({d[1]})\n"
+
+    await interaction.response.send_message(content)
+
+@bot.tree.command(name="recomendar_dev", description="Recomienda un desarrollador disponible")
+async def recomendar_dev(interaction: discord.Interaction):
+    devs = database.get_available_devs()
+    if not devs:
+        await interaction.response.send_message("No hay desarrolladores disponibles para recomendar.")
+        return
+
+    # Just pick the one with fewer strikes? Or just the first one.
+    # Let's pick the one with fewest strikes.
+    recommended = min(devs, key=lambda x: x[4])
+
+    await interaction.response.send_message(f"Te recomiendo a <@{recommended[0]}> (Strikes: {recommended[4]})")
+
+@bot.tree.command(name="strike", description="Añade un strike a un desarrollador (Solo Staff)")
+@app_commands.describe(dev="El desarrollador", motivo="Motivo del strike")
+async def strike(interaction: discord.Interaction, dev: discord.Member, motivo: str):
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede poner strikes.", ephemeral=True)
+        return
+
+    dev_data = database.get_dev(str(dev.id))
+    if not dev_data:
+        await interaction.response.send_message(f"{dev.mention} no está registrado como desarrollador.", ephemeral=True)
+        return
+
+    database.add_strike(str(dev.id))
+
+    # Log to a channel or just send message
+    await interaction.response.send_message(f"Strike añadido a {dev.mention}. Motivo: {motivo}")
+
+    # Optionally notify the dev
+    try:
+        await dev.send(f"Has recibido un strike. Motivo: {motivo}")
+    except:
+        pass
+
+if __name__ == "__main__":
+    import os
+    token = os.getenv("DISCORD_TOKEN")
+    if token:
+        bot.run(token)
+    else:
+        print("Error: DISCORD_TOKEN no encontrado en las variables de entorno.")
