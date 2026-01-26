@@ -24,3 +24,12 @@ PROJECT_TYPES = [
 
 # Priority Levels
 PRIORITIES = ["Baja", "Media", "Alta"]
+
+# Specialties
+SPECIALTIES = [
+    "Builder",
+    "Scripter",
+    "Diseñador Gráfico",
+    "Modelador 3D",
+    "Otro"
+]

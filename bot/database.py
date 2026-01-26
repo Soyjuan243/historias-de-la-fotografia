@@ -17,9 +17,19 @@ def init_db():
         username TEXT NOT NULL,
         status TEXT DEFAULT 'disponible',
         active BOOLEAN DEFAULT 1,
-        strikes INTEGER DEFAULT 0
+        strikes INTEGER DEFAULT 0,
+        specialty TEXT,
+        work_count INTEGER DEFAULT 0
     )
     ''')
+
+    # Migration for existing tables
+    try:
+        cursor.execute("ALTER TABLE developers ADD COLUMN specialty TEXT")
+        cursor.execute("ALTER TABLE developers ADD COLUMN work_count INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        # Columns already exist
+        pass
 
     # Projects table
     cursor.execute('''
@@ -60,14 +70,27 @@ def init_db():
     conn.close()
 
 # Developer CRUD
-def register_dev(discord_id, username):
+def register_dev(discord_id, username, specialty=None):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute('''
-    INSERT INTO developers (discord_id, username)
-    VALUES (?, ?)
-    ON CONFLICT(discord_id) DO UPDATE SET username=excluded.username, active=1
-    ''', (discord_id, username))
+    INSERT INTO developers (discord_id, username, specialty)
+    VALUES (?, ?, ?)
+    ON CONFLICT(discord_id) DO UPDATE SET
+        username=excluded.username,
+        active=1,
+        specialty=COALESCE(excluded.specialty, developers.specialty)
+    ''', (discord_id, username, specialty))
+    conn.commit()
+    conn.close()
+
+def update_work_count(discord_id, amount, absolute=False):
+    conn = get_connection()
+    cursor = conn.cursor()
+    if absolute:
+        cursor.execute('UPDATE developers SET work_count = ? WHERE discord_id = ?', (amount, discord_id))
+    else:
+        cursor.execute('UPDATE developers SET work_count = work_count + ? WHERE discord_id = ?', (amount, discord_id))
     conn.commit()
     conn.close()
 

@@ -203,17 +203,26 @@ async def finalizar_proyecto(interaction: discord.Interaction, project_id: int):
 
 # Developer Commands
 @bot.tree.command(name="registrar_dev", description="Registra a un nuevo desarrollador en la base de datos")
-@app_commands.describe(dev="El usuario a registrar")
-async def registrar_dev(interaction: discord.Interaction, dev: discord.Member):
-    # Only staff can register others? Or devs can register themselves?
-    # Spec says "/registrar_dev" under "Developers" category.
-    # Usually staff registers devs.
+@app_commands.describe(dev="El usuario a registrar", especialidad="Especialidad del desarrollador")
+@app_commands.choices(especialidad=[
+    app_commands.Choice(name=s, value=s) for s in config.SPECIALTIES
+])
+async def registrar_dev(interaction: discord.Interaction, dev: discord.Member, especialidad: str):
     if not is_staff(interaction) and interaction.user.id != dev.id:
         await interaction.response.send_message("No tienes permiso para registrar a este desarrollador.", ephemeral=True)
         return
 
-    database.register_dev(str(dev.id), dev.display_name)
-    await interaction.response.send_message(f"Desarrollador {dev.mention} registrado exitosamente.")
+    database.register_dev(str(dev.id), dev.display_name, especialidad)
+
+    # Auto-assign Developer role
+    try:
+        role_dev = discord.utils.get(interaction.guild.roles, name=config.ROLE_DEVELOPER)
+        if role_dev:
+            await dev.add_roles(role_dev)
+    except Exception as e:
+        print(f"Error asignando rol de developer: {e}")
+
+    await interaction.response.send_message(f"Desarrollador {dev.mention} registrado exitosamente como **{especialidad}**.")
 
 @bot.tree.command(name="asignar_dev", description="Asigna un desarrollador a un proyecto (Solo Staff)")
 @app_commands.describe(dev="El desarrollador", project_id="ID del proyecto")
@@ -278,13 +287,32 @@ async def perfil_dev(interaction: discord.Interaction, dev: discord.Member):
         await interaction.response.send_message(f"{dev.mention} no está registrado como desarrollador.", ephemeral=True)
         return
 
-    # dev_data = (discord_id, username, status, active, strikes)
+    # dev_data = (discord_id, username, status, active, strikes, specialty, work_count)
     embed = discord.Embed(title=f"Perfil de {dev_data[1]}", color=discord.Color.blue())
+    embed.add_field(name="Especialidad", value=str(dev_data[5]))
     embed.add_field(name="Estado", value=dev_data[2].capitalize())
+    embed.add_field(name="Trabajos Realizados", value=str(dev_data[6]))
     embed.add_field(name="Activo", value="Sí" if dev_data[3] else "No")
     embed.add_field(name="Strikes", value=str(dev_data[4]))
 
     await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(name="modificar_trabajos", description="Modifica la cantidad de trabajos de un desarrollador (Solo Staff)")
+@app_commands.describe(dev="El desarrollador", cantidad="Cantidad a establecer o sumar", modo="Modo de actualización")
+@app_commands.choices(modo=[
+    app_commands.Choice(name="Sumar", value="add"),
+    app_commands.Choice(name="Establecer", value="set")
+])
+async def modificar_trabajos(interaction: discord.Interaction, dev: discord.Member, cantidad: int, modo: str):
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede modificar trabajos.", ephemeral=True)
+        return
+
+    is_absolute = (modo == "set")
+    database.update_work_count(str(dev.id), cantidad, absolute=is_absolute)
+
+    action = "establecido en" if is_absolute else "aumentado en"
+    await interaction.response.send_message(f"Trabajos de {dev.mention} {action} {cantidad}.")
 
 @bot.tree.command(name="devs_disponibles", description="Lista los desarrolladores disponibles")
 async def devs_disponibles(interaction: discord.Interaction):
@@ -299,18 +327,44 @@ async def devs_disponibles(interaction: discord.Interaction):
 
     await interaction.response.send_message(content)
 
-@bot.tree.command(name="recomendar_dev", description="Recomienda un desarrollador disponible")
-async def recomendar_dev(interaction: discord.Interaction):
+@bot.tree.command(name="recomendar_dev", description="Recomienda desarrolladores disponibles de forma inteligente")
+@app_commands.describe(project_id="ID del proyecto (opcional para recomendación inteligente)")
+async def recomendar_dev(interaction: discord.Interaction, project_id: int = None):
     devs = database.get_available_devs()
     if not devs:
         await interaction.response.send_message("No hay desarrolladores disponibles para recomendar.")
         return
 
-    # Just pick the one with fewer strikes? Or just the first one.
-    # Let's pick the one with fewest strikes.
-    recommended = min(devs, key=lambda x: x[4])
+    # dev_data = (discord_id, username, status, active, strikes, specialty, work_count)
 
-    await interaction.response.send_message(f"Te recomiendo a <@{recommended[0]}> (Strikes: {recommended[4]})")
+    project = None
+    if project_id:
+        conn = database.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
+        project = cursor.fetchone()
+        conn.close()
+
+    if project and project[2] == "Juego completo":
+        # Intelligent recommendation for large projects: 1 Advanced + 1 New
+        # Sort by work_count
+        devs_sorted = sorted(devs, key=lambda x: x[6])
+
+        new_dev = devs_sorted[0]
+        advanced_dev = devs_sorted[-1]
+
+        if new_dev[0] == advanced_dev[0]:
+            await interaction.response.send_message(f"Para este proyecto grande, recomiendo a <@{new_dev[0]}> (es el único disponible).")
+        else:
+            await interaction.response.send_message(
+                f"### Recomendación Inteligente para Proyecto Grande:\n"
+                f"🌟 **Líder (Avanzado):** <@{advanced_dev[0]}> ({advanced_dev[6]} trabajos)\n"
+                f"👶 **Apoyo (Nuevo):** <@{new_dev[0]}> ({new_dev[6]} trabajos)"
+            )
+    else:
+        # Standard recommendation: fewest strikes, then most work_count
+        recommended = min(devs, key=lambda x: (x[4], -x[6]))
+        await interaction.response.send_message(f"Te recomiendo a <@{recommended[0]}> ({recommended[5]}, {recommended[6]} trabajos)")
 
 @bot.tree.command(name="strike", description="Añade un strike a un desarrollador (Solo Staff)")
 @app_commands.describe(dev="El desarrollador", motivo="Motivo del strike")
