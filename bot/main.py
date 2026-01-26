@@ -21,11 +21,21 @@ bot = MyBot()
 
 # Helper to check roles
 def is_staff(interaction: discord.Interaction):
-    staff_roles = [config.ROLE_ALTO_MANDO, config.ROLE_ADMIN]
-    return any(role.name in staff_roles for role in interaction.user.roles)
+    staff_roles = [str(config.ROLE_ALTO_MANDO), str(config.ROLE_ADMIN)]
+    return any(str(role.id) in staff_roles or role.name in staff_roles for role in interaction.user.roles)
 
 def is_developer(interaction: discord.Interaction):
-    return any(role.name == config.ROLE_DEVELOPER for role in interaction.user.roles)
+    target = str(config.ROLE_DEVELOPER)
+    return any(str(role.id) == target or role.name == target for role in interaction.user.roles)
+
+def get_role_custom(guild, name_or_id):
+    target = str(name_or_id)
+    # Try by ID first
+    if target.isdigit():
+        role = guild.get_role(int(target))
+        if role: return role
+    # Then by name
+    return discord.utils.get(guild.roles, name=target)
 
 # Ticket Commands
 class TicketTypeSelect(discord.ui.Select):
@@ -59,7 +69,8 @@ class TicketDescriptionModal(discord.ui.Modal, title="Descripción del Ticket"):
         }
 
         # Add staff roles to overwrites
-        staff_roles = [r for r in guild.roles if r.name in [config.ROLE_ALTO_MANDO, config.ROLE_ADMIN]]
+        staff_id_or_names = [str(config.ROLE_ALTO_MANDO), str(config.ROLE_ADMIN)]
+        staff_roles = [r for r in guild.roles if str(r.id) in staff_id_or_names or r.name in staff_id_or_names]
         for role in staff_roles:
             overwrites[role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
 
@@ -191,8 +202,8 @@ async def finalizar_proyecto(interaction: discord.Interaction, project_id: int):
         # Update roles if possible
         try:
             member = await interaction.guild.fetch_member(int(dev_id))
-            role_disponible = discord.utils.get(interaction.guild.roles, name=config.ROLE_DISPONIBLE)
-            role_ocupado = discord.utils.get(interaction.guild.roles, name=config.ROLE_OCUPADO)
+            role_disponible = get_role_custom(interaction.guild, config.ROLE_DISPONIBLE)
+            role_ocupado = get_role_custom(interaction.guild, config.ROLE_OCUPADO)
             if role_disponible and role_ocupado:
                 await member.add_roles(role_disponible)
                 await member.remove_roles(role_ocupado)
@@ -216,7 +227,7 @@ async def registrar_dev(interaction: discord.Interaction, dev: discord.Member, e
 
     # Auto-assign Developer role
     try:
-        role_dev = discord.utils.get(interaction.guild.roles, name=config.ROLE_DEVELOPER)
+        role_dev = get_role_custom(interaction.guild, config.ROLE_DEVELOPER)
         if role_dev:
             await dev.add_roles(role_dev)
     except Exception as e:
@@ -261,8 +272,8 @@ async def asignar_dev(interaction: discord.Interaction, dev: discord.Member, pro
 
     # Update Roles
     try:
-        role_disponible = discord.utils.get(interaction.guild.roles, name=config.ROLE_DISPONIBLE)
-        role_ocupado = discord.utils.get(interaction.guild.roles, name=config.ROLE_OCUPADO)
+        role_disponible = get_role_custom(interaction.guild, config.ROLE_DISPONIBLE)
+        role_ocupado = get_role_custom(interaction.guild, config.ROLE_OCUPADO)
         if role_disponible and role_ocupado:
             await dev.add_roles(role_ocupado)
             await dev.remove_roles(role_disponible)
