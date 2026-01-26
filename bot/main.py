@@ -154,10 +154,11 @@ async def ver_proyectos(interaction: discord.Interaction):
 
     embed = discord.Embed(title="Lista de Proyectos", color=discord.Color.green())
     for p in projects:
-        # p = (id, name, type, client, priority, status, ticket_id)
+        # p = (id, name, type, client, priority, status, ticket_id, assigned_dev)
+        assigned_dev = f"<@{p[7]}>" if p[7] else "Ninguno"
         embed.add_field(
             name=f"ID: {p[0]} - {p[1]}",
-            value=f"Tipo: {p[2]}\nCliente: {p[3]}\nPrioridad: {p[4]}\nEstado: {p[5]}",
+            value=f"Tipo: {p[2]}\nCliente: {p[3]}\nPrioridad: {p[4]}\nEstado: {p[5]}\nDev: {assigned_dev}",
             inline=False
         )
 
