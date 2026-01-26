@@ -25,16 +25,23 @@ Este bot está diseñado para gestionar desarrolladores, proyectos y tickets en 
 
 3. **Instalar dependencias**:
    ```bash
-   pip install discord.py
+   pip install discord.py python-dotenv
    ```
 
 4. **Configurar el Token**:
-   Para que el bot funcione, necesitas configurar la variable de entorno `DISCORD_TOKEN`.
-   - **Opción A (Terminal Temporal)**:
+   Para que el bot funcione, necesitas configurar el token de Discord de una de las siguientes maneras:
+
+   - **Opción A (Archivo .env - Recomendada)**:
+     1. Crea un archivo llamado `.env` en la carpeta raíz del proyecto.
+     2. Añade la siguiente línea dentro del archivo:
+        ```text
+        DISCORD_TOKEN=TU_TOKEN_AQUI
+        ```
+     3. Asegúrate de haber instalado `python-dotenv` (incluido en el paso 3).
+
+   - **Opción B (Variable de Entorno en Terminal)**:
      - Windows (PowerShell): `$env:DISCORD_TOKEN="TU_TOKEN_AQUI"`
      - Linux/Mac/Git Bash: `export DISCORD_TOKEN="TU_TOKEN_AQUI"`
-   - **Opción B (Archivo .env - Requiere `python-dotenv`)**:
-     Si prefieres usar un archivo `.env`, instala `python-dotenv` y añade `load_dotenv()` en `main.py`.
 
 5. **Configurar Roles**:
    Asegúrate de que los nombres de los roles en `bot/config.py` coincidan exactamente con los de tu servidor de Discord.

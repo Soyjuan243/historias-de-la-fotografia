@@ -337,6 +337,12 @@ async def strike(interaction: discord.Interaction, dev: discord.Member, motivo: 
 
 if __name__ == "__main__":
     import os
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+
     token = os.getenv("DISCORD_TOKEN")
     if token:
         bot.run(token)
