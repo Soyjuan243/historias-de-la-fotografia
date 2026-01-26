@@ -108,22 +108,45 @@ async def crear_ticket(interaction: discord.Interaction):
     view.add_item(TicketTypeSelect())
     await interaction.response.send_message("Por favor selecciona el tipo de ticket:", view=view, ephemeral=True)
 
-@bot.tree.command(name="cerrar_ticket", description="Cierra el ticket actual")
+@bot.tree.command(name="cerrar_ticket", description="Cierra el ticket y finaliza cualquier proyecto activo en él")
 async def cerrar_ticket(interaction: discord.Interaction):
-    # Only staff or the creator can close? Prompt says "Solo Admins y Alto Mando tienen acceso inicial"
-    # and "El bot es la autoridad".
     if not is_staff(interaction):
-        # Check if they are the creator
         ticket = database.get_ticket(str(interaction.channel_id))
         if not ticket or ticket[2] != str(interaction.user.id):
             await interaction.response.send_message("No tienes permiso para cerrar este ticket.", ephemeral=True)
             return
 
+    # Auto-finalize project if it exists and is not finished
+    project = database.get_project_by_ticket(str(interaction.channel_id))
+    exp_info = ""
+    if project and project[5] != "finalizado":
+        database.update_project_status(project[0], "finalizado")
+        dev_id = project[7]
+        if dev_id:
+            database.update_dev_status(dev_id, 'disponible')
+            database.update_work_count(dev_id, 1)
+            exp_info = f"\nProyecto **{project[1]}** finalizado automáticamente. Dev liberado (+1 exp)."
+
+            # Update roles
+            try:
+                member = await interaction.guild.fetch_member(int(dev_id))
+                r_disp = get_role_custom(interaction.guild, config.ROLE_DISPONIBLE)
+                r_ocup = get_role_custom(interaction.guild, config.ROLE_OCUPADO)
+                if r_disp and r_ocup:
+                    await member.add_roles(r_disp)
+                    await member.remove_roles(r_ocup)
+            except:
+                pass
+
     database.close_ticket(str(interaction.channel_id))
     database.add_log(f"Ticket cerrado en canal {interaction.channel_id} por {interaction.user.display_name}")
-    await interaction.response.send_message("El ticket ha sido cerrado. El canal se eliminará en 5 segundos.")
+
+    await interaction.response.send_message(f"El ticket ha sido cerrado.{exp_info}\nEl canal se eliminará en 5 segundos.")
     await discord.utils.sleep_until(datetime.datetime.now() + datetime.timedelta(seconds=5))
-    await interaction.channel.delete()
+    try:
+        await interaction.channel.delete()
+    except:
+        pass
 
 # Project Commands
 @bot.tree.command(name="registrar_proyecto", description="Registra un nuevo proyecto (Solo Staff)")
@@ -175,9 +198,12 @@ async def ver_proyectos(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed)
 
-@bot.tree.command(name="finalizar_proyecto", description="Marca un proyecto como finalizado y suma experiencia al dev (Solo Staff)")
-@app_commands.describe(project_id="ID del proyecto (opcional si estás en el canal del ticket)")
-async def finalizar_proyecto(interaction: discord.Interaction, project_id: int = None):
+@bot.tree.command(name="finalizar_proyecto", description="Finaliza el proyecto, suma experiencia y libera al dev (Solo Staff)")
+@app_commands.describe(
+    project_id="ID del proyecto (opcional si estás en el canal del ticket)",
+    cerrar_ticket="¿Deseas cerrar y eliminar el canal del ticket también?"
+)
+async def finalizar_proyecto(interaction: discord.Interaction, project_id: int = None, cerrar_ticket: bool = False):
     if not is_staff(interaction):
         await interaction.response.send_message("Solo el Staff puede finalizar proyectos.", ephemeral=True)
         return
@@ -227,6 +253,15 @@ async def finalizar_proyecto(interaction: discord.Interaction, project_id: int =
             print(f"Error actualizando roles para el dev {dev_id}: {e}")
 
     await interaction.response.send_message(f"✅ Proyecto **{project[1]}** marcado como finalizado.{exp_msg}")
+
+    if cerrar_ticket:
+        await interaction.channel.send("El ticket se cerrará y el canal se eliminará en 5 segundos...")
+        database.close_ticket(str(interaction.channel_id))
+        await discord.utils.sleep_until(datetime.datetime.now() + datetime.timedelta(seconds=5))
+        try:
+            await interaction.channel.delete()
+        except:
+            pass
 
 # Developer Commands
 @bot.tree.command(name="registrar_dev", description="Registra a un nuevo desarrollador en la base de datos")
