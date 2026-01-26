@@ -337,9 +337,11 @@ async def strike(interaction: discord.Interaction, dev: discord.Member, motivo: 
 
 if __name__ == "__main__":
     import os
+    dotenv_loaded = False
     try:
         from dotenv import load_dotenv
         load_dotenv()
+        dotenv_loaded = True
     except ImportError:
         pass
 
@@ -347,4 +349,13 @@ if __name__ == "__main__":
     if token:
         bot.run(token)
     else:
-        print("Error: DISCORD_TOKEN no encontrado en las variables de entorno.")
+        print("--- ERROR DE CONFIGURACIÓN ---")
+        print("DISCORD_TOKEN no encontrado.")
+        print(f"Directorio de ejecución: {os.getcwd()}")
+        print(f"Archivo .env encontrado: {os.path.exists('.env')}")
+        if not dotenv_loaded:
+            print("AVISO: La librería 'python-dotenv' no está instalada. Ejecuta: pip install python-dotenv")
+        print("\nREVISIÓN:")
+        print("1. El archivo debe llamarse exactamente .env (sin .txt al final)")
+        print("2. El contenido debe ser: DISCORD_TOKEN=TuTokenAqui (sin espacios)")
+        print("3. Si usas VS Code, asegúrate de haber guardado el archivo (Ctrl+S)")
