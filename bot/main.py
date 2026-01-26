@@ -175,30 +175,46 @@ async def ver_proyectos(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed)
 
-@bot.tree.command(name="finalizar_proyecto", description="Marca un proyecto como finalizado (Solo Staff)")
-@app_commands.describe(project_id="ID del proyecto a finalizar")
-async def finalizar_proyecto(interaction: discord.Interaction, project_id: int):
+@bot.tree.command(name="finalizar_proyecto", description="Marca un proyecto como finalizado y suma experiencia al dev (Solo Staff)")
+@app_commands.describe(project_id="ID del proyecto (opcional si estás en el canal del ticket)")
+async def finalizar_proyecto(interaction: discord.Interaction, project_id: int = None):
     if not is_staff(interaction):
         await interaction.response.send_message("Solo el Staff puede finalizar proyectos.", ephemeral=True)
         return
 
-    # Find project
-    conn = database.get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
-    project = cursor.fetchone()
-    conn.close()
+    project = None
+    if project_id is None:
+        # Intentar buscar por canal actual
+        project = database.get_project_by_ticket(str(interaction.channel_id))
+        if not project:
+            await interaction.response.send_message("No se encontró un proyecto asociado a este canal. Por favor, proporciona el ID del proyecto.", ephemeral=True)
+            return
+        project_id = project[0]
+    else:
+        conn = database.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM projects WHERE id = ?", (project_id,))
+        project = cursor.fetchone()
+        conn.close()
 
     if not project:
         await interaction.response.send_message(f"No se encontró el proyecto con ID {project_id}.", ephemeral=True)
         return
 
+    if project[5] == "finalizado":
+        await interaction.response.send_message("Este proyecto ya ha sido finalizado previamente.", ephemeral=True)
+        return
+
     database.update_project_status(project_id, "finalizado")
-    database.add_log(f"Proyecto finalizado: ID {project_id} por {interaction.user.display_name}")
+    database.add_log(f"Proyecto finalizado: {project[1]} (ID: {project_id}) por {interaction.user.display_name}")
 
     dev_id = project[7] # assigned_dev
+    exp_msg = ""
     if dev_id:
         database.update_dev_status(dev_id, 'disponible')
+        database.update_work_count(dev_id, 1) # Sumar experiencia
+        exp_msg = "\n📈 El desarrollador ha ganado +1 de experiencia y ahora está disponible."
+
         # Update roles if possible
         try:
             member = await interaction.guild.fetch_member(int(dev_id))
@@ -210,7 +226,7 @@ async def finalizar_proyecto(interaction: discord.Interaction, project_id: int):
         except Exception as e:
             print(f"Error actualizando roles para el dev {dev_id}: {e}")
 
-    await interaction.response.send_message(f"Proyecto **{project[1]}** marcado como finalizado y desarrollador liberado.")
+    await interaction.response.send_message(f"✅ Proyecto **{project[1]}** marcado como finalizado.{exp_msg}")
 
 # Developer Commands
 @bot.tree.command(name="registrar_dev", description="Registra a un nuevo desarrollador en la base de datos")
