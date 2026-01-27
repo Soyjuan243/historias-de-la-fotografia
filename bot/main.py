@@ -57,8 +57,8 @@ class TicketDescriptionModal(discord.ui.Modal, title="Descripción del Ticket"):
         guild = interaction.guild
         user = interaction.user
 
-        # Check if developer
-        if is_developer(interaction):
+        # Check if developer (and not staff)
+        if is_developer(interaction) and not is_staff(interaction):
             allowed_dev_tickets = ["Baja Temporal", "Reclamo / Duda", "Otro"]
             if self.ticket_type not in allowed_dev_tickets:
                 await interaction.response.send_message(f"Los developers solo pueden abrir tickets de: {', '.join(allowed_dev_tickets)}", ephemeral=True)
@@ -269,8 +269,8 @@ async def finalizar_proyecto(interaction: discord.Interaction, project_id: int =
     app_commands.Choice(name=s, value=s) for s in config.SPECIALTIES
 ])
 async def registrar_dev(interaction: discord.Interaction, dev: discord.Member, especialidad: str):
-    if not is_staff(interaction) and interaction.user.id != dev.id:
-        await interaction.response.send_message("No tienes permiso para registrar a este desarrollador.", ephemeral=True)
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede registrar desarrolladores.", ephemeral=True)
         return
 
     database.register_dev(str(dev.id), dev.display_name, especialidad)
@@ -475,6 +475,50 @@ async def strike(interaction: discord.Interaction, dev: discord.Member, motivo: 
         await dev.send(f"Has recibido un strike. Motivo: {motivo}")
     except:
         pass
+
+@bot.tree.command(name="certificar_pago", description="Genera una certificación formal de pago para un desarrollador (Solo Staff)")
+@app_commands.describe(dev="El desarrollador", project_id="ID del proyecto (opcional)")
+async def certificar_pago(interaction: discord.Interaction, dev: discord.Member, project_id: int = None):
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede certificar pagos.", ephemeral=True)
+        return
+
+    dev_data = database.get_dev(str(dev.id))
+    if not dev_data:
+        await interaction.response.send_message(f"{dev.mention} no está registrado como desarrollador.", ephemeral=True)
+        return
+
+    # dev_data = (discord_id, username, status, active, strikes, specialty, work_count)
+    specialty = dev_data[5] or "No especificada"
+
+    project_name = "Servicios generales / Otros"
+    if project_id:
+        conn = database.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM projects WHERE id = ?", (project_id,))
+        p = cursor.fetchone()
+        conn.close()
+        if p:
+            project_name = p[0]
+
+    embed = discord.Embed(
+        title="📜 CERTIFICACIÓN FORMAL DE PAGO",
+        description="Por medio de la presente, se hace constar el pago realizado a:",
+        color=discord.Color.gold(),
+        timestamp=datetime.datetime.now()
+    )
+
+    embed.add_field(name="Desarrollador", value=dev.mention, inline=False)
+    embed.add_field(name="Especialidad", value=f"**{specialty}**", inline=True)
+    embed.add_field(name="Proyecto", value=f"**{project_name}**", inline=True)
+    embed.add_field(name="Estado del Pago", value="✅ COMPLETADO", inline=False)
+
+    embed.set_footer(text=f"Certificado por: {interaction.user.display_name} | Bot de Gestión")
+    embed.set_thumbnail(url=dev.display_avatar.url)
+
+    database.add_log(f"Pago certificado para {dev.display_name} en proyecto {project_name} por {interaction.user.display_name}")
+
+    await interaction.response.send_message(embed=embed)
 
 if __name__ == "__main__":
     import os
