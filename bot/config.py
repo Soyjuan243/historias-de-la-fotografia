@@ -10,6 +10,8 @@ TICKET_TYPES = [
     "Postulación",
     "Proyecto / Juego",
     "Servicio",
+    "Baja Temporal",
+    "Reclamo / Duda",
     "Otro"
 ]
 

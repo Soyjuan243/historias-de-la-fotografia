@@ -59,8 +59,10 @@ class TicketDescriptionModal(discord.ui.Modal, title="Descripción del Ticket"):
 
         # Check if developer
         if is_developer(interaction):
-            await interaction.response.send_message("Los developers no pueden crear tickets.", ephemeral=True)
-            return
+            allowed_dev_tickets = ["Baja Temporal", "Reclamo / Duda", "Otro"]
+            if self.ticket_type not in allowed_dev_tickets:
+                await interaction.response.send_message(f"Los developers solo pueden abrir tickets de: {', '.join(allowed_dev_tickets)}", ephemeral=True)
+                return
 
         # Create channel
         overwrites = {
@@ -100,10 +102,7 @@ class TicketDescriptionModal(discord.ui.Modal, title="Descripción del Ticket"):
 
 @bot.tree.command(name="crear_ticket", description="Crea un nuevo ticket de soporte o postulación")
 async def crear_ticket(interaction: discord.Interaction):
-    if is_developer(interaction):
-        await interaction.response.send_message("Los developers no pueden crear tickets.", ephemeral=True)
-        return
-
+    # Developers can now access the menu to see allowed options
     view = discord.ui.View()
     view.add_item(TicketTypeSelect())
     await interaction.response.send_message("Por favor selecciona el tipo de ticket:", view=view, ephemeral=True)
