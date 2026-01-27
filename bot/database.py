@@ -124,6 +124,13 @@ def get_available_devs():
     conn.close()
     return devs
 
+def delete_dev(discord_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM developers WHERE discord_id = ?', (discord_id,))
+    conn.commit()
+    conn.close()
+
 # Project CRUD
 def create_project(name, type, client, priority, ticket_id=None):
     conn = get_connection()

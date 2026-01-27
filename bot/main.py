@@ -286,6 +286,32 @@ async def registrar_dev(interaction: discord.Interaction, dev: discord.Member, e
 
     await interaction.response.send_message(f"Desarrollador {dev.mention} registrado exitosamente como **{especialidad}**.")
 
+@bot.tree.command(name="eliminar_dev", description="Elimina a un desarrollador de la base de datos (Solo Staff)")
+@app_commands.describe(dev="El desarrollador a eliminar")
+async def eliminar_dev(interaction: discord.Interaction, dev: discord.Member):
+    if not is_staff(interaction):
+        await interaction.response.send_message("Solo el Staff puede eliminar desarrolladores.", ephemeral=True)
+        return
+
+    # Check if exists
+    dev_data = database.get_dev(str(dev.id))
+    if not dev_data:
+        await interaction.response.send_message(f"{dev.mention} no está registrado en la base de datos.", ephemeral=True)
+        return
+
+    database.delete_dev(str(dev.id))
+    database.add_log(f"Dev {dev.display_name} eliminado por {interaction.user.display_name}")
+
+    # Remove Developer role
+    try:
+        role_dev = get_role_custom(interaction.guild, config.ROLE_DEVELOPER)
+        if role_dev:
+            await dev.remove_roles(role_dev)
+    except Exception as e:
+        print(f"Error removiendo rol de developer: {e}")
+
+    await interaction.response.send_message(f"❌ {dev.mention} ha sido eliminado de la base de datos y se le ha retirado el rol de developer.")
+
 @bot.tree.command(name="asignar_dev", description="Asigna un desarrollador a un proyecto (Solo Staff)")
 @app_commands.describe(dev="El desarrollador", project_id="ID del proyecto")
 async def asignar_dev(interaction: discord.Interaction, dev: discord.Member, project_id: int):
