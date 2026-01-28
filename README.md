@@ -61,3 +61,22 @@ El bot utiliza comandos de barra (`/`). Asegúrate de que el bot tenga permisos 
 - `/asignar_dev`: (Staff) Asigna un desarrollador disponible a un proyecto.
 - `/registrar_dev`: Registra a un usuario como desarrollador en el sistema.
 - `/devs_disponibles`: Muestra quién puede trabajar.
+
+## Hosting 24/7 (Mantener el bot siempre encendido)
+
+Para que el bot no se apague al cerrar tu laptop, necesitas un **Servidor (Hosting)**. Aquí tienes las mejores opciones:
+
+### Opción 1: Hosting especializado (Recomendado para facilidad)
+Servicios como **PebbleHost**, **BisectHosting** o **SparkedHost** ofrecen planes de "Discord Bot Hosting" por ~1 USD al mes. Ellos te dan un panel de control donde subes los archivos y el bot se queda encendido siempre.
+
+### Opción 2: Railway.app o Render (Fácil y moderno)
+1. Sube tu código a un repositorio de **GitHub**.
+2. Conecta Railway o Render a ese repositorio.
+3. Configura la variable `DISCORD_TOKEN` en el panel de control del servicio.
+4. El bot se desplegará y encenderá solo.
+
+### Opción 3: VPS (DigitalOcean, AWS, Google Cloud)
+Si tienes un servidor Linux (Ubuntu), usa **PM2** para que el bot se reinicie solo si falla:
+1. Instala PM2: `npm install pm2 -g`
+2. Inicia el bot: `pm2 start bot/main.py --name "discord-bot" --interpreter python3`
+3. Para ver el estado: `pm2 status`
