@@ -1,0 +1,37 @@
+# Role Names
+ROLE_ALTO_MANDO = "👑 Alto Mando"
+ROLE_ADMIN = "🛡️ Admin"
+ROLE_DEVELOPER = "🧑‍💻 Developer"
+ROLE_OCUPADO = "🟥 Ocupado"
+ROLE_DISPONIBLE = "🟩 Disponible"
+
+# Ticket Types
+TICKET_TYPES = [
+    "Postulación",
+    "Proyecto / Juego",
+    "Servicio",
+    "Baja Temporal",
+    "Reclamo / Duda",
+    "Otro"
+]
+
+# Project Types
+PROJECT_TYPES = [
+    "Juego completo",
+    "Mapa",
+    "Script",
+    "Modelado",
+    "Mixto"
+]
+
+# Priority Levels
+PRIORITIES = ["Baja", "Media", "Alta"]
+
+# Specialties
+SPECIALTIES = [
+    "Builder",
+    "Scripter",
+    "Diseñador Gráfico",
+    "Modelador 3D",
+    "Otro"
+]
