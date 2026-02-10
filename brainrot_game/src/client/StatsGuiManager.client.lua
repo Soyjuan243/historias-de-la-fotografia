@@ -48,10 +48,11 @@ local function createStatsGui(brainrot)
         return label
     end
 
-    local nameLabel = createLabel("NameLabel", 1, Color3.new(1, 1, 1), 0.25)
-    local levelLabel = createLabel("LevelLabel", 2, Color3.fromRGB(0, 220, 255), 0.18)
-    local categoryLabel = createLabel("CategoryLabel", 3, Color3.fromRGB(0, 255, 0), 0.18)
-    local incomeLabel = createLabel("IncomeLabel", 4, Color3.fromRGB(0, 255, 0), 0.25)
+    local nameLabel = createLabel("NameLabel", 1, Color3.new(1, 1, 1), 0.22)
+    local levelLabel = createLabel("LevelLabel", 2, Color3.fromRGB(0, 220, 255), 0.16)
+    local categoryLabel = createLabel("CategoryLabel", 3, Color3.fromRGB(0, 255, 0), 0.16)
+    local mutationLabel = createLabel("MutationLabel", 4, Color3.new(1, 1, 1), 0.16)
+    local incomeLabel = createLabel("IncomeLabel", 5, Color3.fromRGB(0, 255, 0), 0.22)
 
     billboard.Parent = brainrot
 
@@ -71,6 +72,8 @@ local function createStatsGui(brainrot)
             else
                 categoryLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
             end
+
+            mutationLabel.Text = data.Mutation or "Sin mutaciones"
 
             incomeLabel.Text = "$" .. Utils.formatNumber(income) .. "/s"
         end
