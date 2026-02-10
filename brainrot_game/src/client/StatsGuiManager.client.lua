@@ -9,10 +9,18 @@ local Utils = require(Shared:WaitForChild("Utils"))
 local function createStatsGui(brainrot)
     if brainrot:FindFirstChild("StatsGui") then return end
 
+    -- Find a suitable part to attach the UI to if it's a model
+    local adornee = brainrot
+    if brainrot:IsA("Model") then
+        adornee = brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart")
+    end
+
+    if not adornee then return end
+
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "StatsGui"
     billboard.Size = UDim2.new(6, 0, 3, 0)
-    billboard.Adornee = brainrot
+    billboard.Adornee = adornee
     billboard.StudsOffset = Vector3.new(0, 5, 0)
     billboard.AlwaysOnTop = true
     billboard.MaxDistance = 60
@@ -98,4 +106,4 @@ for _, descendant in ipairs(Workspace:GetDescendants()) do
     end
 end
 
-print("[Client] Stats GUI Manager updated with reference style.")
+print("[Client] Stats GUI Manager updated with Model support.")

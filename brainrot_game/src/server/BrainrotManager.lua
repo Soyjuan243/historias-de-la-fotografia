@@ -6,6 +6,8 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Events = require(Shared:WaitForChild("Events"))
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
 
+local Models = ReplicatedStorage:FindFirstChild("Models")
+
 local BrainrotManager = {}
 
 function BrainrotManager.calculateStats(typeID, level)
@@ -30,12 +32,36 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
         end
     end
 
-    local brainrot = Instance.new("Part")
-    brainrot.Name = data.Name
-    brainrot.Size = Vector3.new(4, 4, 4)
-    brainrot.Position = platform.Position + Vector3.new(0, 3, 0)
-    brainrot.Anchored = true
-    brainrot.BrickColor = BrickColor.new("Bright yellow")
+    local brainrot
+    local modelTemplate = Models and Models:FindFirstChild(typeID)
+
+    if modelTemplate then
+        brainrot = modelTemplate:Clone()
+        brainrot.Name = data.Name
+        -- PivotTo is the modern way to move models/parts
+        brainrot:PivotTo(platform.CFrame * CFrame.new(0, 3, 0))
+
+        -- Ensure it's anchored if it's a model
+        if brainrot:IsA("Model") then
+            if brainrot.PrimaryPart then
+                brainrot.PrimaryPart.Anchored = true
+            end
+            for _, p in ipairs(brainrot:GetDescendants()) do
+                if p:IsA("BasePart") then p.Anchored = true end
+            end
+        else
+            brainrot.Anchored = true
+        end
+    else
+        -- Fallback to a part if no model found
+        brainrot = Instance.new("Part")
+        brainrot.Name = data.Name
+        brainrot.Size = Vector3.new(4, 4, 4)
+        brainrot.Position = platform.Position + Vector3.new(0, 3, 0)
+        brainrot.Anchored = true
+        brainrot.BrickColor = BrickColor.new("Bright yellow")
+    end
+
     brainrot.Parent = platform
 
     local income, cost = BrainrotManager.calculateStats(typeID, level)

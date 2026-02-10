@@ -4,9 +4,9 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
-
--- Require BrainrotManager (ModuleScript) to handle inventory addition
 local BrainrotManager = require(ServerScriptService:WaitForChild("BrainrotManager"))
+
+local Models = ReplicatedStorage:FindFirstChild("Models")
 
 local SPAWN_INTERVAL = 15 -- Spawn every 15s
 local DESPAWN_TIME = 30   -- Destroy after 30s if not picked up
@@ -17,21 +17,39 @@ local function spawnAtLocation(locationPart)
     local typeID = commonIDs[math.random(1, #commonIDs)]
     local data = BrainrotData.Types[typeID]
 
-    local brainrot = Instance.new("Part")
-    brainrot.Name = "Spawned_" .. typeID
-    brainrot.Size = Vector3.new(2, 2, 2)
-    brainrot.Position = locationPart.Position + Vector3.new(0, 2, 0)
-    brainrot.Anchored = true
-    brainrot.CanCollide = false
-    brainrot.BrickColor = BrickColor.new("Bright green")
+    local brainrot
+    local modelTemplate = Models and Models:FindFirstChild(typeID)
+
+    if modelTemplate then
+        brainrot = modelTemplate:Clone()
+        brainrot.Name = "Spawned_" .. typeID
+        brainrot:PivotTo(locationPart.CFrame * CFrame.new(0, 2, 0))
+
+        -- Non-collidable for loose spawns
+        for _, p in ipairs(brainrot:GetDescendants()) do
+            if p:IsA("BasePart") then
+                p.CanCollide = false
+                p.Anchored = true
+            end
+        end
+    else
+        brainrot = Instance.new("Part")
+        brainrot.Name = "Spawned_" .. typeID
+        brainrot.Size = Vector3.new(2, 2, 2)
+        brainrot.Position = locationPart.Position + Vector3.new(0, 2, 0)
+        brainrot.Anchored = true
+        brainrot.CanCollide = false
+        brainrot.BrickColor = BrickColor.new("Bright green")
+    end
+
     brainrot.Parent = Workspace
 
     -- UI logic for the loose brainrot
     local billboard = Instance.new("BillboardGui")
     billboard.Size = UDim2.new(0, 100, 0, 40)
-    billboard.Adornee = brainrot
+    billboard.Adornee = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
     billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, 2, 0)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.Parent = brainrot
 
     local text = Instance.new("TextLabel")
@@ -50,20 +68,16 @@ local function spawnAtLocation(locationPart)
     prompt.ActionText = "Agarrar"
     prompt.ObjectText = data.Name
     prompt.HoldDuration = 0
-    prompt.Parent = brainrot
+    prompt.Parent = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
 
     prompt.Triggered:Connect(function(player)
         if brainrot:GetAttribute("IsCollected") then return end
         brainrot:SetAttribute("IsCollected", true)
 
-        -- Add to inventory
         BrainrotManager.addToInventory(player, typeID)
-
-        -- Destroy visual representation
         brainrot:Destroy()
     end)
 
-    -- 30 second destruction timer
     task.delay(DESPAWN_TIME, function()
         if brainrot and brainrot.Parent then
             if not brainrot:GetAttribute("IsCollected") then
@@ -91,4 +105,4 @@ task.spawn(function()
     end
 end)
 
-print("[Server] Spawning Service initialized.")
+print("[Server] Spawning Service initialized with Model support.")
