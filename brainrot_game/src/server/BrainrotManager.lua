@@ -212,16 +212,18 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
         local correctionRotation = CFrame.Angles(0, 0, math.rad(-90))
         brainrot:PivotTo(platform.CFrame * CFrame.new(0, pivotOffset, 0) * correctionRotation)
 
-        if brainrot:IsA("BasePart") then
-            brainrot.Anchored = true
-            brainrot.CanCollide = false
-        end
-        for _, p in ipairs(brainrot:GetDescendants()) do
-            if p:IsA("BasePart") then
-                p.Anchored = true
-                p.CanCollide = false
+        local function anchorRecursive(obj)
+            if obj:IsA("BasePart") then
+                obj.Anchored = true
+                obj.CanCollide = false
+                obj.CanTouch = false
+                obj.CanQuery = true
+            end
+            for _, child in ipairs(obj:GetChildren()) do
+                anchorRecursive(child)
             end
         end
+        anchorRecursive(brainrot)
     else
         brainrot = Instance.new("Part")
         brainrot.Name = data.Name or "Brainrot"
@@ -230,6 +232,7 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
         brainrot:PivotTo(platform.CFrame * CFrame.new(0, (platformSize.Y/2) + 2, 0))
         brainrot.Anchored = true
         brainrot.CanCollide = false
+        brainrot.CanTouch = false
         brainrot.BrickColor = BrickColor.new("Bright yellow")
     end
 

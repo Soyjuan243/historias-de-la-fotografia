@@ -21,5 +21,6 @@ createRemote("PlaceBrainrot")
 createRemote("RequestInventory")
 createRemote("CollectSpawn")
 createRemote("RemoveBrainrot")
+createRemote("SystemMessage")
 
-print("[Server] Remote events updated: Added RemoveBrainrot.")
+print("[Server] Remote events updated: Added SystemMessage.")

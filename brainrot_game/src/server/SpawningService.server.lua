@@ -68,16 +68,18 @@ local function spawnWithinArea()
         local correctionRotation = CFrame.Angles(0, 0, math.rad(-90))
         brainrot:PivotTo(getRandomPositionInPart(spawnPart) * CFrame.new(0, pivotOffset, 0) * randomRotation * correctionRotation)
 
-        if brainrot:IsA("BasePart") then
-            brainrot.Anchored = true
-            brainrot.CanCollide = false
-        end
-        for _, p in ipairs(brainrot:GetDescendants()) do
-            if p:IsA("BasePart") then
-                p.Anchored = true
-                p.CanCollide = false
+        local function anchorRecursive(obj)
+            if obj:IsA("BasePart") then
+                obj.Anchored = true
+                obj.CanCollide = false
+                obj.CanTouch = false
+                obj.CanQuery = true
+            end
+            for _, child in ipairs(obj:GetChildren()) do
+                anchorRecursive(child)
             end
         end
+        anchorRecursive(brainrot)
     else
         brainrot = Instance.new("Part")
         brainrot.Name = "Spawned_" .. typeID
@@ -85,6 +87,7 @@ local function spawnWithinArea()
         brainrot:PivotTo(getRandomPositionInPart(spawnPart) * CFrame.new(0, 1, 0) * CFrame.Angles(0, math.rad(math.random(0, 360)), 0))
         brainrot.Anchored = true
         brainrot.CanCollide = false
+        brainrot.CanTouch = false
         brainrot.BrickColor = BrickColor.new("Bright green")
     end
 

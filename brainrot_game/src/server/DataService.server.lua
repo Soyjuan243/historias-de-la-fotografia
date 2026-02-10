@@ -46,9 +46,12 @@ local function saveData(player)
 
     local platformStates = {}
     local Platforms = Workspace:FindFirstChild("Platforms")
+    local platformsToClear = {}
+
     if Platforms then
         for _, platform in ipairs(Platforms:GetChildren()) do
             if platform:GetAttribute("OwnerID") == player.UserId then
+                table.insert(platformsToClear, platform)
                 local brainrot = nil
                 for _, child in ipairs(platform:GetChildren()) do
                     if child:GetAttribute("IsBrainrot") then
@@ -67,7 +70,7 @@ local function saveData(player)
     end
 
     -- Use UpdateAsync for better reliability in production
-    pcall(function()
+    local success, err = pcall(function()
         PlayerDataStore:UpdateAsync("User_" .. userId, function(oldData)
             return {
                 Money = leaderstats.Money.Value,
@@ -76,6 +79,23 @@ local function saveData(player)
             }
         end)
     end)
+
+    if success then
+        print("Data successfully saved for " .. player.Name)
+        -- Clear platforms from Workspace after save to prevent state duplication/bugs on rejoin
+        for _, platform in ipairs(platformsToClear) do
+            for _, child in ipairs(platform:GetChildren()) do
+                if child:GetAttribute("IsBrainrot") then
+                    child:Destroy()
+                end
+            end
+            platform:SetAttribute("IsOccupied", false)
+            platform:SetAttribute("BrainrotID", "")
+            platform:SetAttribute("OwnerID", 0)
+        end
+    else
+        warn("Failed to save data for " .. player.Name .. ": " .. tostring(err))
+    end
 end
 
 Players.PlayerAdded:Connect(loadData)
