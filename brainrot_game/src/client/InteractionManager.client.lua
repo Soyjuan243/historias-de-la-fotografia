@@ -18,39 +18,66 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 150)
-frame.Position = UDim2.new(0.5, -150, 0.7, 0)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-frame.BorderSizePixel = 2
+frame.Size = UDim2.new(0, 400, 0, 200)
+frame.Position = UDim2.new(0.5, -200, 0.7, 0)
+frame.BackgroundTransparency = 1
 frame.Parent = screenGui
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0.3, 0)
-title.Text = "Brainrot Actions"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.BackgroundTransparency = 1
-title.TextScaled = true
-title.Parent = frame
+local function createStyledButton(name, position, colors)
+    local btn = Instance.new("TextButton")
+    btn.Name = name
+    btn.Size = UDim2.new(0.9, 0, 0.4, 0)
+    btn.Position = position
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = true
+    btn.TextScaled = true
+    btn.Font = Enum.Font.FredokaOne
+    btn.TextColor3 = Color3.new(1, 1, 1)
 
-local collectBtn = Instance.new("TextButton")
-collectBtn.Name = "CollectButton"
-collectBtn.Size = UDim2.new(0.45, 0, 0.5, 0)
-collectBtn.Position = UDim2.new(0.025, 0, 0.4, 0)
-collectBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-collectBtn.Text = "💰 Collect"
-collectBtn.TextColor3 = Color3.new(1, 1, 1)
-collectBtn.TextScaled = true
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0.2, 0)
+    corner.Parent = btn
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new(colors)
+    gradient.Rotation = 90
+    gradient.Parent = btn
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 3
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Color = Color3.new(0,0,0)
+    stroke.Parent = btn
+
+    return btn
+end
+
+-- Colors based on image
+local upgradeColors = {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 0))
+}
+local collectColors = {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 255, 100)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 200, 0))
+}
+
+local upgradeBtn = createStyledButton("UpgradeButton", UDim2.new(0.05, 0, 0, 0), upgradeColors)
+upgradeBtn.Parent = frame
+
+local collectBtn = createStyledButton("CollectButton", UDim2.new(0.05, 0, 0.5, 0), collectColors)
 collectBtn.Parent = frame
 
-local upgradeBtn = Instance.new("TextButton")
-upgradeBtn.Name = "UpgradeButton"
-upgradeBtn.Size = UDim2.new(0.45, 0, 0.5, 0)
-upgradeBtn.Position = UDim2.new(0.525, 0, 0.4, 0)
-upgradeBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-upgradeBtn.Text = "⬆️ Upgrade"
-upgradeBtn.TextColor3 = Color3.new(1, 1, 1)
-upgradeBtn.TextScaled = true
-upgradeBtn.Parent = frame
+-- Add sub-text for level in upgrade button
+local levelText = Instance.new("TextLabel")
+levelText.Name = "LevelText"
+levelText.Size = UDim2.new(1, 0, 0.3, 0)
+levelText.Position = UDim2.new(0, 0, 0.7, 0)
+levelText.BackgroundTransparency = 1
+levelText.TextColor3 = Color3.new(0, 1, 1) -- Cyan-ish as in image
+levelText.TextScaled = true
+levelText.Font = Enum.Font.FredokaOne
+levelText.Parent = upgradeBtn
 
 local currentPlatform = nil
 
@@ -82,7 +109,6 @@ RunService.RenderStepped:Connect(function()
         currentPlatform = nearest
         screenGui.Enabled = true
 
-        -- Find the brainrot inside the platform
         local brainrot = nil
         for _, child in ipairs(nearest:GetChildren()) do
             if child:GetAttribute("IsBrainrot") then
@@ -92,8 +118,19 @@ RunService.RenderStepped:Connect(function()
         end
 
         if brainrot then
+            local level = brainrot:GetAttribute("Level") or 1
             local cost = brainrot:GetAttribute("UpgradeCost") or 0
-            upgradeBtn.Text = "⬆️ Upgrade ($" .. cost .. ")"
+            local generated = brainrot:GetAttribute("GeneratedMoney") or 0
+
+            if level < 100 then
+                upgradeBtn.Text = "$" .. cost
+                levelText.Text = "Nivel " .. level .. " > Nivel " .. (level + 1)
+                upgradeBtn.Visible = true
+            else
+                upgradeBtn.Visible = false
+            end
+
+            collectBtn.Text = "$" .. generated
         end
     else
         currentPlatform = nil
@@ -113,4 +150,4 @@ upgradeBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-print("[Client] Interaction Manager initialized.")
+print("[Client] Interaction Manager updated with new GUI style.")

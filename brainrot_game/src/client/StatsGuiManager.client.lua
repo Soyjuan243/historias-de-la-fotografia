@@ -9,11 +9,11 @@ local function createStatsGui(brainrot)
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "StatsGui"
-    billboard.Size = UDim2.new(4, 0, 2, 0)
+    billboard.Size = UDim2.new(5, 0, 2.5, 0)
     billboard.Adornee = brainrot
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.StudsOffset = Vector3.new(0, 4, 0)
     billboard.AlwaysOnTop = true
-    billboard.MaxDistance = 50
+    billboard.MaxDistance = 60
 
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1, 0, 1, 0)
@@ -24,48 +24,32 @@ local function createStatsGui(brainrot)
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
     layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0.05, 0)
     layout.Parent = container
 
-    -- Name (White)
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Name = "NameLabel"
-    nameLabel.LayoutOrder = 1
-    nameLabel.Size = UDim2.new(1, 0, 0.25, 0)
-    nameLabel.TextColor3 = Color3.new(1, 1, 1)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.TextScaled = true
-    nameLabel.Parent = container
+    local function createLabel(name, order, color, isBold)
+        local label = Instance.new("TextLabel")
+        label.Name = name
+        label.LayoutOrder = order
+        label.Size = UDim2.new(1, 0, 0.22, 0)
+        label.TextColor3 = color
+        label.BackgroundTransparency = 1
+        label.TextScaled = true
+        label.Font = isBold and Enum.Font.FredokaOne or Enum.Font.FredokaOne
 
-    -- Level (Blue)
-    local levelLabel = Instance.new("TextLabel")
-    levelLabel.Name = "LevelLabel"
-    levelLabel.LayoutOrder = 2
-    levelLabel.Size = UDim2.new(1, 0, 0.25, 0)
-    levelLabel.TextColor3 = Color3.new(0.2, 0.6, 1)
-    levelLabel.BackgroundTransparency = 1
-    levelLabel.TextScaled = true
-    levelLabel.Parent = container
+        local stroke = Instance.new("UIStroke")
+        stroke.Thickness = 2
+        stroke.Color = Color3.new(0,0,0)
+        stroke.Parent = label
 
-    -- Category (Green)
-    local categoryLabel = Instance.new("TextLabel")
-    categoryLabel.Name = "CategoryLabel"
-    categoryLabel.LayoutOrder = 3
-    categoryLabel.Size = UDim2.new(1, 0, 0.25, 0)
-    categoryLabel.TextColor3 = Color3.new(0, 1, 0)
-    categoryLabel.BackgroundTransparency = 1
-    categoryLabel.TextScaled = true
-    categoryLabel.Parent = container
+        label.Parent = container
+        return label
+    end
 
-    -- Income (Green Big)
-    local incomeLabel = Instance.new("TextLabel")
-    incomeLabel.Name = "IncomeLabel"
-    incomeLabel.LayoutOrder = 4
-    incomeLabel.Size = UDim2.new(1, 0, 0.25, 0)
-    incomeLabel.TextColor3 = Color3.new(0, 0.8, 0)
-    incomeLabel.BackgroundTransparency = 1
-    incomeLabel.TextScaled = true
-    incomeLabel.Font = Enum.Font.SourceSansBold
-    incomeLabel.Parent = container
+    local nameLabel = createLabel("NameLabel", 1, Color3.new(1, 1, 1), true)
+    local levelLabel = createLabel("LevelLabel", 2, Color3.fromRGB(50, 150, 255), false)
+    local categoryLabel = createLabel("CategoryLabel", 3, Color3.fromRGB(50, 255, 50), false)
+    local incomeLabel = createLabel("IncomeLabel", 4, Color3.fromRGB(0, 255, 0), true)
 
     billboard.Parent = brainrot
 
@@ -102,4 +86,4 @@ for _, descendant in ipairs(Workspace:GetDescendants()) do
     end
 end
 
-print("[Client] Stats GUI Manager initialized.")
+print("[Client] Stats GUI Manager updated.")

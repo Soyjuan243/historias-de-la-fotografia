@@ -1,14 +1,34 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Events = require(Shared:WaitForChild("Events"))
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
 
 local BrainrotManager = {}
 
-function BrainrotManager.spawnBrainrot(typeID, platform)
+function BrainrotManager.calculateStats(typeID, level)
+    local data = BrainrotData.Types[typeID]
+    if not data then return 0, 0 end
+
+    local income = math.floor(data.BaseIncome * (1.5 ^ (level - 1)))
+    local cost = math.floor(data.BaseUpgradeCost * (1.8 ^ (level - 1)))
+
+    return income, cost
+end
+
+function BrainrotManager.spawnBrainrot(typeID, platform, level)
+    level = level or 1
     local data = BrainrotData.Types[typeID]
     if not data then return end
+
+    -- Clear existing brainrot if any
+    for _, child in ipairs(platform:GetChildren()) do
+        if child:GetAttribute("IsBrainrot") then
+            child:Destroy()
+        end
+    end
 
     local brainrot = Instance.new("Part")
     brainrot.Name = data.Name
@@ -18,11 +38,13 @@ function BrainrotManager.spawnBrainrot(typeID, platform)
     brainrot.BrickColor = BrickColor.new("Bright yellow")
     brainrot.Parent = platform
 
+    local income, cost = BrainrotManager.calculateStats(typeID, level)
+
     brainrot:SetAttribute("IsBrainrot", true)
     brainrot:SetAttribute("BrainrotType", typeID)
-    brainrot:SetAttribute("Level", 1)
-    brainrot:SetAttribute("Income", data.BaseIncome)
-    brainrot:SetAttribute("UpgradeCost", data.BaseUpgradeCost)
+    brainrot:SetAttribute("Level", level)
+    brainrot:SetAttribute("Income", income)
+    brainrot:SetAttribute("UpgradeCost", cost)
     brainrot:SetAttribute("GeneratedMoney", 0)
 
     platform:SetAttribute("IsOccupied", true)
@@ -46,10 +68,11 @@ Events.get("CollectMoney").OnServerEvent:Connect(function(player, platform)
     if brainrot then
         local money = brainrot:GetAttribute("GeneratedMoney") or 0
         if money > 0 then
-            local moneyStat = player.leaderstats.Money
-            moneyStat.Value = moneyStat.Value + money
-            brainrot:SetAttribute("GeneratedMoney", 0)
-            print(player.Name .. " collected $" .. money)
+            local leaderstats = player:FindFirstChild("leaderstats")
+            if leaderstats then
+                leaderstats.Money.Value = leaderstats.Money.Value + money
+                brainrot:SetAttribute("GeneratedMoney", 0)
+            end
         end
     end
 end)
@@ -66,43 +89,53 @@ Events.get("UpgradeBrainrot").OnServerEvent:Connect(function(player, platform)
     end
 
     if brainrot then
+        local currentLevel = brainrot:GetAttribute("Level") or 1
+        if currentLevel >= 100 then return end
+
         local cost = brainrot:GetAttribute("UpgradeCost") or 0
-        local moneyStat = player.leaderstats.Money
+        local leaderstats = player:FindFirstChild("leaderstats")
 
-        if moneyStat.Value >= cost then
-            moneyStat.Value = moneyStat.Value - cost
+        if leaderstats and leaderstats.Money.Value >= cost then
+            leaderstats.Money.Value = leaderstats.Money.Value - cost
 
-            local currentLevel = brainrot:GetAttribute("Level") or 1
             local newLevel = currentLevel + 1
-
             local typeID = brainrot:GetAttribute("BrainrotType")
-            local data = BrainrotData.Types[typeID]
-
-            -- Progression Math: 1.5x income, 1.8x cost per level
-            local newIncome = math.floor(data.BaseIncome * (1.5 ^ (newLevel - 1)))
-            local newCost = math.floor(data.BaseUpgradeCost * (1.8 ^ (newLevel - 1)))
+            local newIncome, newCost = BrainrotManager.calculateStats(typeID, newLevel)
 
             brainrot:SetAttribute("Level", newLevel)
             brainrot:SetAttribute("Income", newIncome)
             brainrot:SetAttribute("UpgradeCost", newCost)
-
-            print(player.Name .. " upgraded " .. data.Name .. " to level " .. newLevel)
         end
     end
 end)
 
--- Initial Demo Placement
-task.spawn(function()
+-- Initial Placement / Data Restore
+local function onPlayerAdded(player)
     local Platforms = Workspace:WaitForChild("Platforms")
-    -- Wait for platforms to be created by PlatformManager
+    -- Wait for platforms to be created
     repeat task.wait() until #Platforms:GetChildren() >= 5
 
+    -- For this demo, the first player to join sets the levels on the global platforms
+    -- In a real game, each player would have their own platforms.
+
+    -- Wait for data to be loaded by DataService
+    while not player:GetAttribute("BrainrotLevels") do
+        task.wait()
+    end
+
+    local brainrotLevels = HttpService:JSONDecode(player:GetAttribute("BrainrotLevels"))
     local platformList = Platforms:GetChildren()
+    table.sort(platformList, function(a, b) return a.Name < b.Name end)
+
     local brainrotTypes = {"Common1", "Common2", "Common3", "Common4", "Common5"}
 
     for i = 1, 5 do
-        BrainrotManager.spawnBrainrot(brainrotTypes[i], platformList[i])
+        if platformList[i] then
+            BrainrotManager.spawnBrainrot(brainrotTypes[i], platformList[i], brainrotLevels[i])
+        end
     end
-end)
+end
+
+Players.PlayerAdded:Connect(onPlayerAdded)
 
 return BrainrotManager
