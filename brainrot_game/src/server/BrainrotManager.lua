@@ -5,6 +5,7 @@ local HttpService = game:GetService("HttpService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Events = require(Shared:WaitForChild("Events"))
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
+local Utils = require(Shared:WaitForChild("Utils"))
 
 local Models = ReplicatedStorage:FindFirstChild("Models")
 
@@ -25,7 +26,6 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
     local data = BrainrotData.Types[typeID]
     if not data then return end
 
-    -- Clear existing brainrot if any
     for _, child in ipairs(platform:GetChildren()) do
         if child:GetAttribute("IsBrainrot") then
             child:Destroy()
@@ -38,22 +38,13 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
     if modelTemplate then
         brainrot = modelTemplate:Clone()
         brainrot.Name = data.Name
-        -- PivotTo is the modern way to move models/parts
-        brainrot:PivotTo(platform.CFrame * CFrame.new(0, 3, 0))
+        brainrot:PivotTo(CFrame.new(platform.Position + Vector3.new(0, 3, 0)))
 
-        -- Ensure it's anchored if it's a model
-        if brainrot:IsA("Model") then
-            if brainrot.PrimaryPart then
-                brainrot.PrimaryPart.Anchored = true
-            end
-            for _, p in ipairs(brainrot:GetDescendants()) do
-                if p:IsA("BasePart") then p.Anchored = true end
-            end
-        else
-            brainrot.Anchored = true
+        if brainrot:IsA("BasePart") then brainrot.Anchored = true end
+        for _, p in ipairs(brainrot:GetDescendants()) do
+            if p:IsA("BasePart") then p.Anchored = true end
         end
     else
-        -- Fallback to a part if no model found
         brainrot = Instance.new("Part")
         brainrot.Name = data.Name
         brainrot.Size = Vector3.new(4, 4, 4)
@@ -84,7 +75,6 @@ function BrainrotManager.addToInventory(player, typeID)
     local owned = HttpService:JSONDecode(ownedStr)
     table.insert(owned, typeID)
     player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
-    print("[BrainrotManager] Added " .. typeID .. " to " .. player.Name)
 end
 
 -- Remote Listeners
@@ -151,15 +141,47 @@ Events.get("PlaceBrainrot").OnServerEvent:Connect(function(player, platform, typ
     local owned = HttpService:JSONDecode(ownedStr)
 
     local ownsIt = false
-    for _, id in ipairs(owned) do
+    local index = -1
+    for i, id in ipairs(owned) do
         if id == typeID then
             ownsIt = true
+            index = i
             break
         end
     end
 
     if ownsIt then
+        -- Remove from inventory when placing
+        table.remove(owned, index)
+        player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
+
         BrainrotManager.spawnBrainrot(typeID, platform, 1)
+    end
+end)
+
+Events.get("RemoveBrainrot").OnServerEvent:Connect(function(player, platform)
+    if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
+    if not platform:GetAttribute("IsOccupied") then return end
+
+    local brainrot = nil
+    for _, child in ipairs(platform:GetChildren()) do
+        if child:GetAttribute("IsBrainrot") then
+            brainrot = child
+            break
+        end
+    end
+
+    if brainrot then
+        local typeID = brainrot:GetAttribute("BrainrotType")
+        -- Return to inventory
+        BrainrotManager.addToInventory(player, typeID)
+
+        -- Cleanup
+        brainrot:Destroy()
+        platform:SetAttribute("IsOccupied", false)
+        platform:SetAttribute("BrainrotID", "")
+
+        print("[BrainrotManager] Removed " .. typeID .. " from platform.")
     end
 end)
 

@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Create the Remotes folder if it doesn't exist
 local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
 if not Remotes then
     Remotes = Instance.new("Folder")
@@ -21,5 +20,6 @@ createRemote("UpgradeBrainrot")
 createRemote("PlaceBrainrot")
 createRemote("RequestInventory")
 createRemote("CollectSpawn")
+createRemote("RemoveBrainrot")
 
-print("[Server] Remote events initialized.")
+print("[Server] Remote events updated: Added RemoveBrainrot.")

@@ -8,12 +8,25 @@ local BrainrotManager = require(ServerScriptService:WaitForChild("BrainrotManage
 
 local Models = ReplicatedStorage:FindFirstChild("Models")
 
-local SPAWN_INTERVAL = 15 -- Spawn every 15s
-local DESPAWN_TIME = 30   -- Destroy after 30s if not picked up
+local SPAWN_INTERVAL = 10
+local DESPAWN_TIME = 30
+local SPAWN_RANGE = 100
 
 local commonIDs = {"Common1", "Common2", "Common3", "Common4", "Common5"}
 
-local function spawnAtLocation(locationPart)
+local function getRandomPosition()
+    local baseplate = Workspace:FindFirstChild("Baseplate") or Workspace:FindFirstChildWhichIsA("BasePart")
+    if baseplate then
+        local size = baseplate.Size
+        local pos = baseplate.Position
+        local rx = (math.random() - 0.5) * size.X
+        local rz = (math.random() - 0.5) * size.Z
+        return Vector3.new(pos.X + rx, pos.Y + size.Y/2 + 2, pos.Z + rz)
+    end
+    return Vector3.new((math.random() - 0.5) * SPAWN_RANGE * 2, 5, (math.random() - 0.5) * SPAWN_RANGE * 2)
+end
+
+local function spawnRandomly()
     local typeID = commonIDs[math.random(1, #commonIDs)]
     local data = BrainrotData.Types[typeID]
 
@@ -23,20 +36,23 @@ local function spawnAtLocation(locationPart)
     if modelTemplate then
         brainrot = modelTemplate:Clone()
         brainrot.Name = "Spawned_" .. typeID
-        brainrot:PivotTo(locationPart.CFrame * CFrame.new(0, 2, 0))
 
-        -- Non-collidable for loose spawns
+        local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
+        brainrot:PivotTo(CFrame.new(getRandomPosition()) * randomRotation)
+
+        -- Improved Recursive Anchoring
+        if brainrot:IsA("BasePart") then brainrot.Anchored = true end
         for _, p in ipairs(brainrot:GetDescendants()) do
             if p:IsA("BasePart") then
-                p.CanCollide = false
                 p.Anchored = true
+                p.CanCollide = false
             end
         end
     else
         brainrot = Instance.new("Part")
         brainrot.Name = "Spawned_" .. typeID
         brainrot.Size = Vector3.new(2, 2, 2)
-        brainrot.Position = locationPart.Position + Vector3.new(0, 2, 0)
+        brainrot.CFrame = CFrame.new(getRandomPosition()) * CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
         brainrot.Anchored = true
         brainrot.CanCollide = false
         brainrot.BrickColor = BrickColor.new("Bright green")
@@ -44,7 +60,6 @@ local function spawnAtLocation(locationPart)
 
     brainrot.Parent = Workspace
 
-    -- UI logic for the loose brainrot
     local billboard = Instance.new("BillboardGui")
     billboard.Size = UDim2.new(0, 100, 0, 40)
     billboard.Adornee = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
@@ -73,36 +88,22 @@ local function spawnAtLocation(locationPart)
     prompt.Triggered:Connect(function(player)
         if brainrot:GetAttribute("IsCollected") then return end
         brainrot:SetAttribute("IsCollected", true)
-
         BrainrotManager.addToInventory(player, typeID)
         brainrot:Destroy()
     end)
 
     task.delay(DESPAWN_TIME, function()
-        if brainrot and brainrot.Parent then
-            if not brainrot:GetAttribute("IsCollected") then
-                brainrot:Destroy()
-            end
+        if brainrot and brainrot.Parent and not brainrot:GetAttribute("IsCollected") then
+            brainrot:Destroy()
         end
     end)
 end
 
 task.spawn(function()
     while true do
-        local spawns = {}
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj.Name == "spawn1" and obj:IsA("BasePart") then
-                table.insert(spawns, obj)
-            end
-        end
-
-        if #spawns > 0 then
-            local loc = spawns[math.random(1, #spawns)]
-            spawnAtLocation(loc)
-        end
-
+        spawnRandomly()
         task.wait(SPAWN_INTERVAL)
     end
 end)
 
-print("[Server] Spawning Service initialized with Model support.")
+print("[Server] Spawning Service: Random placement & standing upright enabled.")
