@@ -32,6 +32,7 @@ Crea una carpeta llamada **Shared** y pon estos 3:
 *   **PlacementManager**
 *   **StatsGuiManager**
 *   **InteractionManager**
+*   **MoneyHud** (Nuevo: HUD de dinero animado)
 
 ---
 

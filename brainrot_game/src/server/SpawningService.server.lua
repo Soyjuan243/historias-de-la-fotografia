@@ -33,11 +33,12 @@ end)
 
 local function getRandomPositionInPart(part)
     local size = part.Size
-    local cframe = part.CFrame
-    local rx = (math.random() - 0.5) * size.X
-    local rz = (math.random() - 0.5) * size.Z
+    local rx = (math.random() - 0.5) * (size.X * 0.8) -- Use 80% to avoid edges
+    local rz = (math.random() - 0.5) * (size.Z * 0.8)
     local topY = size.Y / 2
-    return (cframe * CFrame.new(rx, topY + 2, rz)).Position
+
+    -- Return CFrame to preserve orientation if the part is rotated
+    return part.CFrame * CFrame.new(rx, topY, rz)
 end
 
 local function spawnWithinArea()
@@ -56,9 +57,17 @@ local function spawnWithinArea()
         brainrot = modelTemplate:Clone()
         brainrot.Name = "Spawned_" .. typeID
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
-        brainrot:PivotTo(CFrame.new(getRandomPositionInPart(spawnPart)) * randomRotation)
 
-        if brainrot:IsA("BasePart") then brainrot.Anchored = true end
+        -- Positioning: Calculate model height to spawn exactly on top
+        local modelSize = brainrot:GetExtentsSize()
+        local pivotOffset = modelSize.Y / 2
+
+        brainrot:PivotTo(getRandomPositionInPart(spawnPart) * CFrame.new(0, pivotOffset, 0) * randomRotation)
+
+        if brainrot:IsA("BasePart") then
+            brainrot.Anchored = true
+            brainrot.CanCollide = false
+        end
         for _, p in ipairs(brainrot:GetDescendants()) do
             if p:IsA("BasePart") then
                 p.Anchored = true
@@ -69,7 +78,7 @@ local function spawnWithinArea()
         brainrot = Instance.new("Part")
         brainrot.Name = "Spawned_" .. typeID
         brainrot.Size = Vector3.new(2, 2, 2)
-        brainrot.CFrame = CFrame.new(getRandomPositionInPart(spawnPart)) * CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
+        brainrot:PivotTo(getRandomPositionInPart(spawnPart) * CFrame.new(0, 1, 0) * CFrame.Angles(0, math.rad(math.random(0, 360)), 0))
         brainrot.Anchored = true
         brainrot.CanCollide = false
         brainrot.BrickColor = BrickColor.new("Bright green")

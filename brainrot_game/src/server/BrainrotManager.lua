@@ -200,18 +200,32 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
     if modelTemplate then
         brainrot = modelTemplate:Clone()
         brainrot.Name = data.Name or "Brainrot"
-        brainrot:PivotTo(CFrame.new(platform.Position + Vector3.new(0, 3, 0)))
 
-        if brainrot:IsA("BasePart") then brainrot.Anchored = true end
+        -- Calculate precise positioning on platform
+        local modelSize = brainrot:GetExtentsSize()
+        local platformSize = platform.Size
+        local pivotOffset = (platformSize.Y / 2) + (modelSize.Y / 2)
+
+        brainrot:PivotTo(platform.CFrame * CFrame.new(0, pivotOffset, 0))
+
+        if brainrot:IsA("BasePart") then
+            brainrot.Anchored = true
+            brainrot.CanCollide = false
+        end
         for _, p in ipairs(brainrot:GetDescendants()) do
-            if p:IsA("BasePart") then p.Anchored = true end
+            if p:IsA("BasePart") then
+                p.Anchored = true
+                p.CanCollide = false
+            end
         end
     else
         brainrot = Instance.new("Part")
         brainrot.Name = data.Name or "Brainrot"
         brainrot.Size = Vector3.new(4, 4, 4)
-        brainrot.Position = platform.Position + Vector3.new(0, 3, 0)
+        local platformSize = platform.Size
+        brainrot:PivotTo(platform.CFrame * CFrame.new(0, (platformSize.Y/2) + 2, 0))
         brainrot.Anchored = true
+        brainrot.CanCollide = false
         brainrot.BrickColor = BrickColor.new("Bright yellow")
     end
 
