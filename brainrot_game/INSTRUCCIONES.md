@@ -39,9 +39,10 @@ Crea una carpeta llamada **Shared** y pon estos 3:
 ---
 
 ## 👑 COMANDOS DE ADMINISTRADOR
-He añadido un sistema de comandos para administradores.
+He añadido un sistema de comandos para administradores que funciona **entre todos los servidores** (Inter-server).
 *   **Uso:** Escribe en el chat `/spawn ID` (Ejemplo: `/spawn Common1`).
-*   **Efecto:** El personaje aparecerá frente a ti y se enviará un mensaje global a todos los jugadores.
+*   **Efecto:** El personaje aparecerá en una de las zonas `spawn1` y se enviará un mensaje global (en chat y en pantalla) a todos los servidores activos del juego.
+*   **Anuncios personalizados:** Usa `/global MENSAJE` o `/announcement MENSAJE` para enviar un aviso a todos los servidores.
 
 ### Cómo añadir administradores:
 1. Abre el script **AdminCommands** en `ServerScriptService`.

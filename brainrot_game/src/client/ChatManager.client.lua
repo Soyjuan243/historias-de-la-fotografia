@@ -1,11 +1,72 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Events = require(Shared:WaitForChild("Events"))
 
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Crear GUI de Anuncio en pantalla si no existe
+local function createAnnouncementGui()
+    local screen = Instance.new("ScreenGui")
+    screen.Name = "AnnouncementGui"
+    screen.ResetOnSpawn = false
+    screen.DisplayOrder = 100
+    screen.Parent = playerGui
+
+    local label = Instance.new("TextLabel")
+    label.Name = "MessageLabel"
+    label.Size = UDim2.new(1, 0, 0.2, 0)
+    label.Position = UDim2.new(0, 0, 0.1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = ""
+    label.TextColor3 = Color3.fromRGB(255, 215, 0) -- Oro
+    label.Font = Enum.Font.FredokaOne
+    label.TextSize = 40
+    label.TextStrokeTransparency = 0
+    label.TextStrokeColor3 = Color3.new(0,0,0)
+    label.TextScaled = true
+    label.Parent = screen
+
+    local uiPadding = Instance.new("UIPadding")
+    uiPadding.PaddingLeft = UDim.new(0.1, 0)
+    uiPadding.PaddingRight = UDim.new(0.1, 0)
+    uiPadding.Parent = label
+
+    return label
+end
+
+local announcementLabel = createAnnouncementGui()
+
+local function showScreenAnnouncement(text)
+    announcementLabel.Text = text
+    announcementLabel.TextTransparency = 1
+    announcementLabel.TextStrokeTransparency = 1
+
+    local fadeIn = TweenService:Create(announcementLabel, TweenInfo.new(0.5), {
+        TextTransparency = 0,
+        TextStrokeTransparency = 0
+    })
+
+    fadeIn:Play()
+
+    task.delay(5, function()
+        local fadeOut = TweenService:Create(announcementLabel, TweenInfo.new(1), {
+            TextTransparency = 1,
+            TextStrokeTransparency = 1
+        })
+        fadeOut:Play()
+    end)
+end
+
 local function displaySystemMessage(text)
+    -- Mostrar en pantalla
+    showScreenAnnouncement(text)
+
     -- Intentar usar el sistema moderno (TextChatService)
     if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
         -- En TextChatService, los mensajes del sistema se pueden enviar a canales

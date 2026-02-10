@@ -58,14 +58,14 @@ local function spawnWithinArea()
         brainrot.Name = "Spawned_" .. typeID
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
 
-        -- Apply correction first to get correct height
-        brainrot:PivotTo(CFrame.Angles(0, 0, math.rad(-90)))
+        -- Apply correction first to get correct height (90, 0, -180)
+        brainrot:PivotTo(CFrame.Angles(math.rad(90), 0, math.rad(-180)))
 
         -- Positioning: Calculate model height to spawn exactly on top
         local modelSize = brainrot:GetExtentsSize()
         local pivotOffset = modelSize.Y / 2
 
-        local correctionRotation = CFrame.Angles(0, 0, math.rad(-90))
+        local correctionRotation = CFrame.Angles(math.rad(90), 0, math.rad(-180))
         brainrot:PivotTo(getRandomPositionInPart(spawnPart) * CFrame.new(0, pivotOffset, 0) * randomRotation * correctionRotation)
 
         local function anchorRecursive(obj)
@@ -74,6 +74,7 @@ local function spawnWithinArea()
                 obj.CanCollide = false
                 obj.CanTouch = false
                 obj.CanQuery = true
+                obj.Massless = true
             end
             for _, child in ipairs(obj:GetChildren()) do
                 anchorRecursive(child)

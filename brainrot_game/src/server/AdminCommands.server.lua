@@ -6,6 +6,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
 local BrainrotManager = require(ServerScriptService:WaitForChild("BrainrotManager"))
 local Events = require(Shared:WaitForChild("Events"))
+local MessagingService = game:GetService("MessagingService")
 
 local Models = ReplicatedStorage:FindFirstChild("Models")
 
@@ -27,14 +28,40 @@ local function isAuthorized(player)
     return false
 end
 
-local function spawnBrainrot(player, typeID)
+local function broadcastGlobalMessage(text)
+    local data = {
+        Text = text,
+        Time = os.time()
+    }
+    pcall(function()
+        MessagingService:PublishAsync("GlobalAnnouncements", data)
+    end)
+end
+
+-- Subscribe to global messages
+MessagingService:SubscribeAsync("GlobalAnnouncements", function(message)
+    local data = message.Data
+    Events.get("SystemMessage"):FireAllClients(data.Text)
+end)
+
+local function spawnBrainrotInSpawn1(player, typeID)
     local data = BrainrotData.Types[typeID]
     if not data then return end
 
-    local character = player.Character
-    if not character then return end
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    -- Buscar spawn1
+    local spawnParts = {}
+    for _, obj in ipairs(game.Workspace:GetDescendants()) do
+        if obj.Name == "spawn1" and obj:IsA("BasePart") then
+            table.insert(spawnParts, obj)
+        end
+    end
+
+    if #spawnParts == 0 then
+        print("[AdminCommand] No se encontró spawn1")
+        return
+    end
+
+    local spawnPart = spawnParts[math.random(1, #spawnParts)]
 
     local brainrot
     local modelTemplate = Models and Models:FindFirstChild(typeID)
@@ -42,15 +69,22 @@ local function spawnBrainrot(player, typeID)
     if modelTemplate then
         brainrot = modelTemplate:Clone()
         brainrot.Name = "AdminSpawned_" .. typeID
+        local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
 
-        -- Normalizar rotación para cálculo de tamaño
-        brainrot:PivotTo(CFrame.Angles(0, 0, math.rad(-90)))
+        -- Aplicar rotación (90, 0, -180)
+        brainrot:PivotTo(CFrame.Angles(math.rad(90), 0, math.rad(-180)))
         local modelSize = brainrot:GetExtentsSize()
         local pivotOffset = modelSize.Y / 2
 
-        -- Posicionar frente al jugador
-        local spawnCFrame = root.CFrame * CFrame.new(0, 0, -5) * CFrame.new(0, pivotOffset, 0) * CFrame.Angles(0, 0, math.rad(-90))
-        brainrot:PivotTo(spawnCFrame)
+        local correctionRotation = CFrame.Angles(math.rad(90), 0, math.rad(-180))
+
+        -- getRandomPositionInPart logic
+        local size = spawnPart.Size
+        local rx = (math.random() - 0.5) * (size.X * 0.8)
+        local rz = (math.random() - 0.5) * (size.Z * 0.8)
+        local targetCFrame = spawnPart.CFrame * CFrame.new(rx, size.Y/2 + pivotOffset, rz) * randomRotation * correctionRotation
+
+        brainrot:PivotTo(targetCFrame)
 
         local function anchorRecursive(obj)
             if obj:IsA("BasePart") then
@@ -58,6 +92,7 @@ local function spawnBrainrot(player, typeID)
                 obj.CanCollide = false
                 obj.CanTouch = false
                 obj.CanQuery = true
+                obj.Massless = true
             end
             for _, child in ipairs(obj:GetChildren()) do
                 anchorRecursive(child)
@@ -68,11 +103,15 @@ local function spawnBrainrot(player, typeID)
         brainrot = Instance.new("Part")
         brainrot.Name = "AdminSpawned_" .. typeID
         brainrot.Size = Vector3.new(4, 4, 4)
-        brainrot:PivotTo(root.CFrame * CFrame.new(0, 2, -5))
         brainrot.Anchored = true
         brainrot.CanCollide = false
         brainrot.CanTouch = false
         brainrot.BrickColor = BrickColor.new("Bright yellow")
+
+        local size = spawnPart.Size
+        local rx = (math.random() - 0.5) * (size.X * 0.8)
+        local rz = (math.random() - 0.5) * (size.Z * 0.8)
+        brainrot:PivotTo(spawnPart.CFrame * CFrame.new(rx, size.Y/2 + 2, rz))
     end
 
     brainrot.Parent = game.Workspace
@@ -91,12 +130,11 @@ local function spawnBrainrot(player, typeID)
         brainrot:Destroy()
     end)
 
-    -- Anuncio global
+    -- Anuncio Inter-Server
     local msg = string.format("%s ha spawneado un brainrot con rareza %s y el nombre %s",
         player.Name, data.Category or "Común", data.Name or "???")
 
-    Events.get("SystemMessage"):FireAllClients(msg)
-    print("[AdminCommand] " .. msg)
+    broadcastGlobalMessage(msg)
 end
 
 local function onChatted(player, message)
@@ -107,7 +145,12 @@ local function onChatted(player, message)
 
     if command == "/spawn" and args[2] then
         local typeID = args[2]
-        spawnBrainrot(player, typeID)
+        spawnBrainrotInSpawn1(player, typeID)
+    elseif command == "/global" or command == "/announcement" then
+        local msgText = table.concat(args, " ", 2)
+        if msgText and msgText ~= "" then
+            broadcastGlobalMessage("[GLOBAL] " .. player.Name .. ": " .. msgText)
+        end
     end
 end
 
