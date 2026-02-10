@@ -27,12 +27,28 @@ Crea una carpeta llamada **Shared** y pon estos 3:
 *   **SpawningService**
 *   **ProgressionService**
 *   **DataService**
+*   **AdminCommands** (Nuevo: Comandos de administrador)
 
 ### 3. StarterPlayer > StarterPlayerScripts (LocalScripts 📜 personita)
 *   **PlacementManager**
 *   **StatsGuiManager**
 *   **InteractionManager**
 *   **MoneyHud** (Nuevo: HUD de dinero animado)
+*   **ChatManager** (Nuevo: Mensajes del sistema en el chat)
+
+---
+
+## 👑 COMANDOS DE ADMINISTRADOR
+He añadido un sistema de comandos para administradores.
+*   **Uso:** Escribe en el chat `/spawn ID` (Ejemplo: `/spawn Common1`).
+*   **Efecto:** El personaje aparecerá frente a ti y se enviará un mensaje global a todos los jugadores.
+
+### Cómo añadir administradores:
+1. Abre el script **AdminCommands** en `ServerScriptService`.
+2. Busca la línea que dice `local AUTHORIZED_IDS = {`.
+3. Añade los IDs de usuario dentro de las llaves, separados por comas.
+   - Ejemplo: `local AUTHORIZED_IDS = {12345678, 87654321}`.
+   - *Nota: El dueño del juego (tú) ya está autorizado automáticamente.*
 
 ---
 
