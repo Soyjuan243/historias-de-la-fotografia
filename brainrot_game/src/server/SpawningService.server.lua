@@ -60,24 +60,79 @@ local function spawnRandomly()
 
     brainrot.Parent = Workspace
 
-    local billboard = Instance.new("BillboardGui")
-    billboard.Size = UDim2.new(0, 100, 0, 40)
-    billboard.Adornee = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
-    billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.Parent = brainrot
+    -- Name Billboard
+    local nameBillboard = Instance.new("BillboardGui")
+    nameBillboard.Name = "NameBillboard"
+    nameBillboard.Size = UDim2.new(0, 150, 0, 40)
+    nameBillboard.Adornee = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
+    nameBillboard.AlwaysOnTop = true
+    nameBillboard.StudsOffset = Vector3.new(0, 3, 0)
+    nameBillboard.Parent = brainrot
 
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "¡" .. data.Name .. "!"
-    text.TextColor3 = Color3.new(1, 1, 1)
-    text.Font = Enum.Font.FredokaOne
-    text.TextSize = 14
-    text.Parent = billboard
+    local nameText = Instance.new("TextLabel")
+    nameText.Size = UDim2.new(1, 0, 1, 0)
+    nameText.BackgroundTransparency = 1
+    nameText.Text = "¡" .. data.Name .. "!"
+    nameText.TextColor3 = Color3.new(1, 1, 1)
+    nameText.Font = Enum.Font.FredokaOne
+    nameText.TextSize = 16
+    nameText.Parent = nameBillboard
+
+    local nameStroke = Instance.new("UIStroke")
+    nameStroke.Thickness = 2
+    nameStroke.Parent = nameText
+
+    -- Timer Billboard (New)
+    local timerBillboard = Instance.new("BillboardGui")
+    timerBillboard.Name = "TimerBillboard"
+    timerBillboard.Size = UDim2.new(0, 100, 0, 50)
+    timerBillboard.Adornee = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
+    timerBillboard.AlwaysOnTop = true
+    timerBillboard.StudsOffset = Vector3.new(0, 5, 0) -- Above the name
+    timerBillboard.Parent = brainrot
+
+    local timerFrame = Instance.new("Frame")
+    timerFrame.Size = UDim2.new(0, 80, 0, 35)
+    timerFrame.Position = UDim2.new(0.5, -40, 0.5, -17)
+    timerFrame.BackgroundTransparency = 1
+    timerFrame.Parent = timerBillboard
+
+    local iconFrame = Instance.new("Frame")
+    iconFrame.Size = UDim2.new(0, 30, 0, 30)
+    iconFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    iconFrame.BorderSizePixel = 0
+    iconFrame.Parent = timerFrame
+
+    local iconCorner = Instance.new("UICorner")
+    iconCorner.CornerRadius = UDim.new(1, 0) -- Circle
+    iconCorner.Parent = iconFrame
+
+    local iconImg = Instance.new("ImageLabel")
+    iconImg.Size = UDim2.new(0.7, 0, 0.7, 0)
+    iconImg.Position = UDim2.new(0.15, 0, 0.15, 0)
+    iconImg.BackgroundTransparency = 1
+    iconImg.Image = "rbxassetid://6031068433" -- Clock icon
+    iconImg.Parent = iconFrame
+
+    local timerText = Instance.new("TextLabel")
+    timerText.Size = UDim2.new(0.6, 0, 1, 0)
+    timerText.Position = UDim2.new(0.4, 0, 0, 0)
+    timerText.BackgroundTransparency = 1
+    timerText.Text = DESPAWN_TIME .. "s"
+    timerText.TextColor3 = Color3.new(0, 0, 0) -- Black text as in image
+    timerText.Font = Enum.Font.FredokaOne
+    timerText.TextSize = 24
+    timerText.TextXAlignment = Enum.TextXAlignment.Left
+    timerText.Parent = timerFrame
+
+    local textStroke = Instance.new("UIStroke")
+    textStroke.Thickness = 1.5
+    textStroke.Color = Color3.new(1, 1, 1) -- White stroke for visibility
+    textStroke.Parent = timerText
 
     brainrot:SetAttribute("TypeID", typeID)
     brainrot:SetAttribute("IsCollected", false)
+    brainrot:SetAttribute("TimeLeft", DESPAWN_TIME)
 
     local prompt = Instance.new("ProximityPrompt")
     prompt.ActionText = "Agarrar"
@@ -92,8 +147,19 @@ local function spawnRandomly()
         brainrot:Destroy()
     end)
 
-    task.delay(DESPAWN_TIME, function()
-        if brainrot and brainrot.Parent and not brainrot:GetAttribute("IsCollected") then
+    -- Countdown Logic
+    task.spawn(function()
+        local timeLeft = DESPAWN_TIME
+        while timeLeft > 0 and brainrot and brainrot.Parent and not brainrot:GetAttribute("IsCollected") do
+            task.wait(1)
+            timeLeft = timeLeft - 1
+            if brainrot and brainrot.Parent then
+                brainrot:SetAttribute("TimeLeft", timeLeft)
+                timerText.Text = timeLeft .. "s"
+            end
+        end
+
+        if timeLeft <= 0 and brainrot and brainrot.Parent and not brainrot:GetAttribute("IsCollected") then
             brainrot:Destroy()
         end
     end)
@@ -106,4 +172,4 @@ task.spawn(function()
     end
 end)
 
-print("[Server] Spawning Service: Random placement & standing upright enabled.")
+print("[Server] Spawning Service: Random placement & standing upright enabled. Countdown timer added.")
