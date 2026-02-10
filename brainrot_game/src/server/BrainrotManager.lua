@@ -53,6 +53,14 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
     return brainrot
 end
 
+function BrainrotManager.addToInventory(player, typeID)
+    local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
+    local owned = HttpService:JSONDecode(ownedStr)
+    table.insert(owned, typeID)
+    player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
+    print("[BrainrotManager] Added " .. typeID .. " to " .. player.Name .. "'s inventory")
+end
+
 -- Remote Listeners
 Events.get("CollectMoney").OnServerEvent:Connect(function(player, platform)
     if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
@@ -128,7 +136,7 @@ Events.get("PlaceBrainrot").OnServerEvent:Connect(function(player, platform, typ
     end
 
     if ownsIt then
-        -- Remove from inventory (optional, depending on game design)
+        -- Optional: remove from inventory
         -- table.remove(owned, ownedIndex)
         -- player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
 
