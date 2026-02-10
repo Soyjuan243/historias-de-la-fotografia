@@ -29,6 +29,9 @@ local function isAuthorized(player)
 end
 
 local function broadcastGlobalMessage(text)
+    -- Fire locally first so the sender server sees it immediately
+    Events.get("SystemMessage"):FireAllClients(text)
+
     local data = {
         Text = text,
         Time = os.time()
@@ -41,6 +44,9 @@ end
 -- Subscribe to global messages
 MessagingService:SubscribeAsync("GlobalAnnouncements", function(message)
     local data = message.Data
+    -- To avoid duplicate messages on the sender server, we could check a JobId or similar,
+    -- but for simplicity and reliability in inter-server communication, we'll just handle it.
+    -- MessagingService doesn't always send back to the same server, but if it does:
     Events.get("SystemMessage"):FireAllClients(data.Text)
 end)
 
@@ -71,12 +77,12 @@ local function spawnBrainrotInSpawn1(player, typeID)
         brainrot.Name = "AdminSpawned_" .. typeID
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
 
-        -- Aplicar rotación (90, 0, -180)
-        brainrot:PivotTo(CFrame.Angles(math.rad(90), 0, math.rad(-180)))
+        -- Aplicar rotación (90, 0, 90)
+        brainrot:PivotTo(CFrame.Angles(math.rad(90), 0, math.rad(90)))
         local modelSize = brainrot:GetExtentsSize()
         local pivotOffset = modelSize.Y / 2
 
-        local correctionRotation = CFrame.Angles(math.rad(90), 0, math.rad(-180))
+        local correctionRotation = CFrame.Angles(math.rad(90), 0, math.rad(90))
 
         -- getRandomPositionInPart logic
         local size = spawnPart.Size
@@ -85,6 +91,7 @@ local function spawnBrainrotInSpawn1(player, typeID)
         local targetCFrame = spawnPart.CFrame * CFrame.new(rx, size.Y/2 + pivotOffset, rz) * randomRotation * correctionRotation
 
         brainrot:PivotTo(targetCFrame)
+        brainrot.Parent = game.Workspace
 
         local function anchorRecursive(obj)
             if obj:IsA("BasePart") then

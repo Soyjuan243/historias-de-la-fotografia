@@ -20,16 +20,16 @@ local function createAnnouncementGui()
 
     local label = Instance.new("TextLabel")
     label.Name = "MessageLabel"
-    label.Size = UDim2.new(1, 0, 0.2, 0)
-    label.Position = UDim2.new(0, 0, 0.1, 0)
+    label.Size = UDim2.new(1, 0, 0.15, 0)
+    label.Position = UDim2.new(0, 0, 0.02, 0) -- Higher up
     label.BackgroundTransparency = 1
     label.Text = ""
-    label.TextColor3 = Color3.fromRGB(255, 215, 0) -- Oro
-    label.Font = Enum.Font.FredokaOne
-    label.TextSize = 40
-    label.TextStrokeTransparency = 0
+    label.TextColor3 = Color3.new(1, 1, 1) -- White
+    label.Font = Enum.Font.SourceSansBold
+    label.TextSize = 35
+    label.TextStrokeTransparency = 0.5
     label.TextStrokeColor3 = Color3.new(0,0,0)
-    label.TextScaled = true
+    label.TextScaled = false -- Don't scale, use fixed size for cleaner look like in image
     label.Parent = screen
 
     local uiPadding = Instance.new("UIPadding")

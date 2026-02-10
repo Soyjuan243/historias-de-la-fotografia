@@ -201,16 +201,17 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
         brainrot = modelTemplate:Clone()
         brainrot.Name = data.Name or "Brainrot"
 
-        -- Apply correction first to get correct height (90, 0, -180)
-        brainrot:PivotTo(CFrame.Angles(math.rad(90), 0, math.rad(-180)))
+        -- Apply correction first to get correct height (90, 0, 90)
+        brainrot:PivotTo(CFrame.Angles(math.rad(90), 0, math.rad(90)))
 
         -- Calculate precise positioning on platform
         local modelSize = brainrot:GetExtentsSize()
         local platformSize = platform.Size
         local pivotOffset = (platformSize.Y / 2) + (modelSize.Y / 2)
 
-        local correctionRotation = CFrame.Angles(math.rad(90), 0, math.rad(-180))
+        local correctionRotation = CFrame.Angles(math.rad(90), 0, math.rad(90))
         brainrot:PivotTo(platform.CFrame * CFrame.new(0, pivotOffset, 0) * correctionRotation)
+        brainrot.Parent = platform
 
         local function anchorRecursive(obj)
             if obj:IsA("BasePart") then
