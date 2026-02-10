@@ -1,43 +1,49 @@
-# 🚀 GUÍA DEFINITIVA: BRAINROT GAME (INVENTARIO Y 'E')
+# 🚀 GUÍA DEFINITIVA: BRAINROT GAME
 
 ---
 
-## 🛠️ CAMBIOS CLAVE (SISTEMA DE PRODUCCIÓN)
-1.  **Mochila de Roblox (Backpack):** Ya no hay menús lentos. Los personajes que recojas o compres aparecerán directamente en tu inventario de herramientas (el de abajo).
-2.  **Auto-Equipamiento:** Al agarrar un personaje del suelo, **se te pondrá en la mano solo**.
-3.  **Colocar con "E":**
-    *   Sujeta al personaje en tu mano (equípalo).
-    *   Camina hacia una base vacía.
-    *   Presiona **E** para colocarlo.
-4.  **Multijugador Seguro:** Solo TÚ puedes ver los botones de mejora en TUS personajes, y solo tú puedes cobrar de TUS bases.
-5.  **Cobro Táctil:** Pasa por encima de la plataforma verde para recibir tu dinero.
+## ⚠️ AVISO IMPORTANTE SOBRE EL CÓDIGO PYTHON
+El código que empieza por `import math` y tiene `def calculate_stats` **NO ES PARA ROBLOX STUDIO**.
+Ese es un script de **Python** que yo uso para calcular que el dinero del juego esté equilibrado. **No lo pongas en ningún sitio de tu juego**, ignóralo para la instalación.
 
 ---
 
-## 🎨 PREPARACIÓN DEL MAPA
-*   **spawn1:** Crea bloques llamados `spawn1` donde quieras que aparezcan personajes.
-*   **Platforms:** Mete tus bases en una carpeta llamada `Platforms`.
+## 🛠️ INSTRUCCIONES DE INSTALACIÓN (SISTEMA DE PRODUCCIÓN)
+
+### 1. ReplicatedStorage > Shared (ModuleScripts ⚙️)
+Crea una carpeta llamada **Shared** y pon estos 3:
+*   **BrainrotData**
+*   **Events**
+*   **Utils**
+
+### 2. ServerScriptService (Scripts 📜)
+**Crea primero el ModuleScript (azul):**
+*   **BrainrotManager**
+
+**Crea estos Scripts normales (pergamino):**
+*   **Main** (El que activa todo)
+*   **RemoteSetup**
+*   **PlatformManager**
+*   **SpawningService**
+*   **ProgressionService**
+*   **DataService**
+
+### 3. StarterPlayer > StarterPlayerScripts (LocalScripts 📜 personita)
+*   **PlacementManager**
+*   **StatsGuiManager**
+*   **InteractionManager**
 
 ---
 
-## 🚀 UBICACIÓN DE LOS SCRIPTS
-
-| Script | Tipo | Ubicación |
-| :--- | :--- | :--- |
-| **BrainrotManager** | ModuleScript | ServerScriptService |
-| **Main** | Script | ServerScriptService |
-| **RemoteSetup** | Script | ServerScriptService |
-| **PlatformManager** | Script | ServerScriptService |
-| **SpawningService** | Script | ServerScriptService |
-| **ProgressionService** | Script | ServerScriptService |
-| **DataService** | Script | ServerScriptService |
-| **PlacementManager** | LocalScript | StarterPlayerScripts |
-| **StatsGuiManager** | LocalScript | StarterPlayerScripts |
-| **InteractionManager**| LocalScript | StarterPlayerScripts |
+## 🎮 CÓMO JUGAR
+1.  **Recoger:** Camina hacia un personaje en el suelo y usa **E**. Se te pondrá automáticamente en el inventario de abajo (herramientas).
+2.  **Colocar:** Saca el personaje a tu mano (equípalo), acércate a una base vacía y presiona **E**.
+3.  **Cobrar:** Pasa por encima de la plataforma verde de tu base.
+4.  **Mejorar:** Acércate a tu personaje trabajando y aparecerá el menú en pantalla.
 
 ---
 
-### 💡 NOTA PARA EL DESARROLLADOR:
-Si ves el error `gsub (string expected, got nil)`, asegúrate de que todos los personajes que hayas añadido a la lista `BrainrotData.Types` tengan un **Name** válido.
+### 💡 SOLUCIÓN AL ERROR 'gsub'
+He añadido protecciones. Si ves ese error, es porque algún personaje en tu lista de `BrainrotData` no tiene un **Name**. Revisa que todos tengan nombre.
 
 Recuerda activar **"Enable Studio Access to API Services"** en Game Settings -> Security.
