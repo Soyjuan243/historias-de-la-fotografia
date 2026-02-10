@@ -58,11 +58,15 @@ local function spawnWithinArea()
         brainrot.Name = "Spawned_" .. typeID
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
 
+        -- Apply correction first to get correct height
+        brainrot:PivotTo(CFrame.Angles(0, 0, math.rad(-90)))
+
         -- Positioning: Calculate model height to spawn exactly on top
         local modelSize = brainrot:GetExtentsSize()
         local pivotOffset = modelSize.Y / 2
 
-        brainrot:PivotTo(getRandomPositionInPart(spawnPart) * CFrame.new(0, pivotOffset, 0) * randomRotation)
+        local correctionRotation = CFrame.Angles(0, 0, math.rad(-90))
+        brainrot:PivotTo(getRandomPositionInPart(spawnPart) * CFrame.new(0, pivotOffset, 0) * randomRotation * correctionRotation)
 
         if brainrot:IsA("BasePart") then
             brainrot.Anchored = true
