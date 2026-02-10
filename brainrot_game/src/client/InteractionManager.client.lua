@@ -76,70 +76,7 @@ local removeBtn = createStyledButton("RemoveButton", UDim2.new(0, 0, 0.55, 0), {
 removeBtn.Text = "QUITAR"
 removeBtn.Parent = frame
 
--- 2. COLLECT UI (World-Space)
-local collectGuis = {}
-
-local function createCollectWorldUI(platform)
-    if collectGuis[platform] then return end
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "CollectWorldUI"
-    billboard.Size = UDim2.new(0, 120, 0, 45)
-    billboard.Adornee = platform
-    billboard.StudsOffset = Vector3.new(0, 1.5, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = PlayerGui
-
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 1, 0)
-    btn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-    btn.Font = Enum.Font.FredokaOne
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.TextScaled = true
-    btn.Text = "$0"
-    btn.Parent = billboard
-
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.Parent = btn
-
-    local btnStroke = Instance.new("UIStroke")
-    btnStroke.Thickness = 2
-    btnStroke.Parent = btn
-
-    btn.MouseButton1Click:Connect(function()
-        Events.get("CollectMoney"):FireServer(platform)
-    end)
-
-    collectGuis[platform] = billboard
-
-    task.spawn(function()
-        while billboard and billboard.Parent do
-            local brainrot = nil
-            for _, child in ipairs(platform:GetChildren()) do
-                if child:GetAttribute("IsBrainrot") then
-                    brainrot = child
-                    break
-                end
-            end
-
-            if brainrot then
-                local money = brainrot:GetAttribute("GeneratedMoney") or 0
-                btn.Text = "$" .. Utils.formatNumber(money)
-                billboard.Enabled = true
-            else
-                billboard.Enabled = false
-            end
-            task.wait(0.2)
-        end
-    end)
-end
-
-for _, platform in ipairs(Platforms:GetChildren()) do
-    createCollectWorldUI(platform)
-end
-Platforms.ChildAdded:Connect(function(child)
-    if child:IsA("BasePart") then createCollectWorldUI(child) end
-end)
+-- NOTE: Collection is now handled by the physical pad in Workspace (server-side Touched event)
 
 local currentPlatform = nil
 
@@ -148,7 +85,7 @@ local function getNearestPlatform()
     if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
     local hrp = character.HumanoidRootPart
     local nearest = nil
-    local minDistance = 10
+    local minDistance = 8 -- Reduced distance for better interaction
 
     for _, platform in ipairs(Platforms:GetChildren()) do
         if platform:GetAttribute("IsOccupied") then
@@ -208,4 +145,4 @@ removeBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-print("[Client] Interaction Manager updated: Added QUITAR button.")
+print("[Client] Interaction Manager updated: Physical collection active, Screen UI for Upgrades.")

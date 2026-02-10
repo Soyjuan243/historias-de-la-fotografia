@@ -1,24 +1,22 @@
-# 🚀 GUÍA PASO A PASO: BRAINROT GAME
+# 🚀 GUÍA ACTUALIZADA: BRAINROT GAME
 
 ---
 
-## 🛠️ CAMBIOS RECIENTES
-1.  **Aparición Aleatoria:** Los personajes ahora aparecen en cualquier parte del mapa (sobre la Baseplate). Ya no necesitas poner `spawn1` (aunque si los pones, también funcionarán).
-2.  **Personajes de Pie:** Todos los modelos aparecerán rectos y anclados al suelo.
-3.  **Nueva Interfaz (UI):**
-    *   **Botón de Cobrar:** Aparecerá pegado al suelo sobre la plataforma y será visible siempre. ¡Haz clic en él para recoger tus ganancias!
-    *   **Botón de Mejorar:** Solo aparecerá cuando te acerques mucho a un personaje trabajando.
+## 🛠️ CAMBIOS EN ESTA VERSIÓN
+1.  **Inventario de Herramientas (Tools):** Ahora los personajes se guardan en tu inventario de abajo. Para poner uno en una base, **equipa la herramienta** y haz clic en la base.
+2.  **Cobro Automático:** Ya no hay botones flotantes para cobrar dinero. Ahora hay una **plataforma verde (CollectorPad)** en cada base. ¡Solo camina sobre ella para cobrar todo el dinero acumulado!
+3.  **Spawn Controlado:** Los personajes vuelven a aparecer sobre las partes llamadas **spawn1**, pero ahora aparecerán en cualquier punto aleatorio de su superficie.
+4.  **Anclaje Total:** Se ha reforzado el código para que los personajes **nunca se caigan** cuando los pones en la plataforma (están 100% anclados).
 
 ---
 
-## 🎨 CÓMO USAR TUS MODELOS
-1.  Busca **ReplicatedStorage** -> Crea una carpeta llamada **Models**.
-2.  Pon tus modelos dentro con estos nombres: **Common1, Common2, Common3, Common4, Common5, Secret1, Secret2**.
-3.  Asegúrate de que tus modelos tengan un **PrimaryPart** configurado para que la interfaz aparezca en el sitio correcto.
+## 🛠️ PASO A PASO PARA EL MAPA
+1.  **Spawn1:** Crea bloques en el suelo y ponles de nombre **spawn1**. Hazlos grandes si quieres que los personajes aparezcan en un área amplia.
+2.  **Platforms:** Mete tus bases dentro de la carpeta **Platforms**. El script pondrá automáticamente la plataforma de cobro encima.
 
 ---
 
-## 🚀 UBICACIÓN DE LOS SCRIPTS (TABLA DE REFERENCIA)
+## 🚀 UBICACIÓN DE LOS SCRIPTS
 
 | Script | Tipo | Ubicación |
 | :--- | :--- | :--- |
@@ -29,7 +27,6 @@
 | **SpawningService** | Script | ServerScriptService |
 | **ProgressionService** | Script | ServerScriptService |
 | **DataService** | Script | ServerScriptService |
-| **InventoryManager** | LocalScript | StarterPlayerScripts |
 | **PlacementManager** | LocalScript | StarterPlayerScripts |
 | **StatsGuiManager** | LocalScript | StarterPlayerScripts |
 | **InteractionManager**| LocalScript | StarterPlayerScripts |
@@ -37,6 +34,6 @@
 ---
 
 ### 💡 NOTA IMPORTANTE:
-Para que el juego funcione correctamente, asegúrate de tener una parte llamada **Baseplate** en el Workspace para que el script sepa el tamaño de tu mapa y dónde hacer aparecer los personajes.
+El menú de "Mejorar" y "Quitar" seguirá apareciendo en tu pantalla cuando te acerques mucho a un personaje trabajando.
 
-Recuerda activar **"Enable Studio Access to API Services"** en Game Settings -> Security.
+Recuerda activar **"Enable Studio Access to API Services"** en Game Settings -> Security para que se guarden tus personajes y tu dinero.

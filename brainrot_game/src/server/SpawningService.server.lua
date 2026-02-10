@@ -10,23 +10,33 @@ local Models = ReplicatedStorage:FindFirstChild("Models")
 
 local SPAWN_INTERVAL = 10
 local DESPAWN_TIME = 30
-local SPAWN_RANGE = 100
 
 local commonIDs = {"Common1", "Common2", "Common3", "Common4", "Common5"}
 
-local function getRandomPosition()
-    local baseplate = Workspace:FindFirstChild("Baseplate") or Workspace:FindFirstChildWhichIsA("BasePart")
-    if baseplate then
-        local size = baseplate.Size
-        local pos = baseplate.Position
-        local rx = (math.random() - 0.5) * size.X
-        local rz = (math.random() - 0.5) * size.Z
-        return Vector3.new(pos.X + rx, pos.Y + size.Y/2 + 2, pos.Z + rz)
-    end
-    return Vector3.new((math.random() - 0.5) * SPAWN_RANGE * 2, 5, (math.random() - 0.5) * SPAWN_RANGE * 2)
+local function getRandomPositionInPart(part)
+    local size = part.Size
+    local cframe = part.CFrame
+
+    local rx = (math.random() - 0.5) * size.X
+    local rz = (math.random() - 0.5) * size.Z
+
+    -- Spawn on the top surface
+    local topY = size.Y / 2
+
+    return (cframe * CFrame.new(rx, topY + 2, rz)).Position
 end
 
-local function spawnRandomly()
+local function spawnWithinArea()
+    local spawns = {}
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj.Name == "spawn1" and obj:IsA("BasePart") then
+            table.insert(spawns, obj)
+        end
+    end
+
+    if #spawns == 0 then return end
+
+    local spawnPart = spawns[math.random(1, #spawns)]
     local typeID = commonIDs[math.random(1, #commonIDs)]
     local data = BrainrotData.Types[typeID]
 
@@ -38,21 +48,21 @@ local function spawnRandomly()
         brainrot.Name = "Spawned_" .. typeID
 
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
-        brainrot:PivotTo(CFrame.new(getRandomPosition()) * randomRotation)
+        brainrot:PivotTo(CFrame.new(getRandomPositionInPart(spawnPart)) * randomRotation)
 
-        -- Improved Recursive Anchoring
+        -- STRICT RECURSIVE ANCHORING
         if brainrot:IsA("BasePart") then brainrot.Anchored = true end
         for _, p in ipairs(brainrot:GetDescendants()) do
             if p:IsA("BasePart") then
                 p.Anchored = true
-                p.CanCollide = false
+                p.CanCollide = false -- Spawns on ground shouldn't block
             end
         end
     else
         brainrot = Instance.new("Part")
         brainrot.Name = "Spawned_" .. typeID
         brainrot.Size = Vector3.new(2, 2, 2)
-        brainrot.CFrame = CFrame.new(getRandomPosition()) * CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
+        brainrot.CFrame = CFrame.new(getRandomPositionInPart(spawnPart)) * CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
         brainrot.Anchored = true
         brainrot.CanCollide = false
         brainrot.BrickColor = BrickColor.new("Bright green")
@@ -60,7 +70,7 @@ local function spawnRandomly()
 
     brainrot.Parent = Workspace
 
-    -- Name Billboard
+    -- UI logic for the loose brainrot
     local nameBillboard = Instance.new("BillboardGui")
     nameBillboard.Name = "NameBillboard"
     nameBillboard.Size = UDim2.new(0, 150, 0, 40)
@@ -82,13 +92,13 @@ local function spawnRandomly()
     nameStroke.Thickness = 2
     nameStroke.Parent = nameText
 
-    -- Timer Billboard (New)
+    -- Timer Billboard
     local timerBillboard = Instance.new("BillboardGui")
     timerBillboard.Name = "TimerBillboard"
     timerBillboard.Size = UDim2.new(0, 100, 0, 50)
     timerBillboard.Adornee = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
     timerBillboard.AlwaysOnTop = true
-    timerBillboard.StudsOffset = Vector3.new(0, 5, 0) -- Above the name
+    timerBillboard.StudsOffset = Vector3.new(0, 5, 0)
     timerBillboard.Parent = brainrot
 
     local timerFrame = Instance.new("Frame")
@@ -104,14 +114,14 @@ local function spawnRandomly()
     iconFrame.Parent = timerFrame
 
     local iconCorner = Instance.new("UICorner")
-    iconCorner.CornerRadius = UDim.new(1, 0) -- Circle
+    iconCorner.CornerRadius = UDim.new(1, 0)
     iconCorner.Parent = iconFrame
 
     local iconImg = Instance.new("ImageLabel")
     iconImg.Size = UDim2.new(0.7, 0, 0.7, 0)
     iconImg.Position = UDim2.new(0.15, 0, 0.15, 0)
     iconImg.BackgroundTransparency = 1
-    iconImg.Image = "rbxassetid://6031068433" -- Clock icon
+    iconImg.Image = "rbxassetid://6031068433"
     iconImg.Parent = iconFrame
 
     local timerText = Instance.new("TextLabel")
@@ -119,7 +129,7 @@ local function spawnRandomly()
     timerText.Position = UDim2.new(0.4, 0, 0, 0)
     timerText.BackgroundTransparency = 1
     timerText.Text = DESPAWN_TIME .. "s"
-    timerText.TextColor3 = Color3.new(0, 0, 0) -- Black text as in image
+    timerText.TextColor3 = Color3.new(0, 0, 0)
     timerText.Font = Enum.Font.FredokaOne
     timerText.TextSize = 24
     timerText.TextXAlignment = Enum.TextXAlignment.Left
@@ -127,7 +137,7 @@ local function spawnRandomly()
 
     local textStroke = Instance.new("UIStroke")
     textStroke.Thickness = 1.5
-    textStroke.Color = Color3.new(1, 1, 1) -- White stroke for visibility
+    textStroke.Color = Color3.new(1, 1, 1)
     textStroke.Parent = timerText
 
     brainrot:SetAttribute("TypeID", typeID)
@@ -167,9 +177,9 @@ end
 
 task.spawn(function()
     while true do
-        spawnRandomly()
+        spawnWithinArea()
         task.wait(SPAWN_INTERVAL)
     end
 end)
 
-print("[Server] Spawning Service: Random placement & standing upright enabled. Countdown timer added.")
+print("[Server] Spawning Service: Spawning on top of spawn1 surfaces.")
