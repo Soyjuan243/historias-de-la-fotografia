@@ -6,6 +6,7 @@ local Workspace = game:GetService("Workspace")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Events = require(Shared:WaitForChild("Events"))
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
+local Utils = require(Shared:WaitForChild("Utils"))
 
 local player = Players.LocalPlayer
 local Platforms = Workspace:WaitForChild("Platforms")
@@ -123,14 +124,14 @@ RunService.RenderStepped:Connect(function()
             local generated = brainrot:GetAttribute("GeneratedMoney") or 0
 
             if level < 100 then
-                upgradeBtn.Text = "$" .. cost
+                upgradeBtn.Text = "$" .. Utils.formatNumber(cost)
                 levelText.Text = "Nivel " .. level .. " > Nivel " .. (level + 1)
                 upgradeBtn.Visible = true
             else
                 upgradeBtn.Visible = false
             end
 
-            collectBtn.Text = "$" .. generated
+            collectBtn.Text = "$" .. Utils.formatNumber(generated)
         end
     else
         currentPlatform = nil

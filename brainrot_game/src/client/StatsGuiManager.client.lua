@@ -1,17 +1,19 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
+local Utils = require(Shared:WaitForChild("Utils"))
 
 local function createStatsGui(brainrot)
     if brainrot:FindFirstChild("StatsGui") then return end
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "StatsGui"
-    billboard.Size = UDim2.new(5, 0, 2.5, 0)
+    billboard.Size = UDim2.new(6, 0, 3, 0)
     billboard.Adornee = brainrot
-    billboard.StudsOffset = Vector3.new(0, 4, 0)
+    billboard.StudsOffset = Vector3.new(0, 5, 0)
     billboard.AlwaysOnTop = true
     billboard.MaxDistance = 60
 
@@ -24,21 +26,21 @@ local function createStatsGui(brainrot)
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
     layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding = UDim.new(0.05, 0)
+    layout.Padding = UDim.new(0.02, 0)
     layout.Parent = container
 
-    local function createLabel(name, order, color, isBold)
+    local function createLabel(name, order, color, sizeY)
         local label = Instance.new("TextLabel")
         label.Name = name
         label.LayoutOrder = order
-        label.Size = UDim2.new(1, 0, 0.22, 0)
+        label.Size = UDim2.new(1, 0, sizeY or 0.2, 0)
         label.TextColor3 = color
         label.BackgroundTransparency = 1
         label.TextScaled = true
-        label.Font = isBold and Enum.Font.FredokaOne or Enum.Font.FredokaOne
+        label.Font = Enum.Font.FredokaOne
 
         local stroke = Instance.new("UIStroke")
-        stroke.Thickness = 2
+        stroke.Thickness = 2.5
         stroke.Color = Color3.new(0,0,0)
         stroke.Parent = label
 
@@ -46,10 +48,10 @@ local function createStatsGui(brainrot)
         return label
     end
 
-    local nameLabel = createLabel("NameLabel", 1, Color3.new(1, 1, 1), true)
-    local levelLabel = createLabel("LevelLabel", 2, Color3.fromRGB(50, 150, 255), false)
-    local categoryLabel = createLabel("CategoryLabel", 3, Color3.fromRGB(50, 255, 50), false)
-    local incomeLabel = createLabel("IncomeLabel", 4, Color3.fromRGB(0, 255, 0), true)
+    local nameLabel = createLabel("NameLabel", 1, Color3.new(1, 1, 1), 0.25)
+    local levelLabel = createLabel("LevelLabel", 2, Color3.fromRGB(0, 220, 255), 0.18)
+    local categoryLabel = createLabel("CategoryLabel", 3, Color3.fromRGB(0, 255, 0), 0.18)
+    local incomeLabel = createLabel("IncomeLabel", 4, Color3.fromRGB(0, 255, 0), 0.25)
 
     billboard.Parent = brainrot
 
@@ -62,8 +64,15 @@ local function createStatsGui(brainrot)
         if data then
             nameLabel.Text = data.Name
             levelLabel.Text = "Nivel " .. level
+
             categoryLabel.Text = data.Category
-            incomeLabel.Text = "$" .. income .. "/seg"
+            if data.Category == "Secreto" then
+                categoryLabel.TextColor3 = Color3.new(1, 0, 0)
+            else
+                categoryLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+            end
+
+            incomeLabel.Text = "$" .. Utils.formatNumber(income) .. "/s"
         end
     end
 
@@ -86,4 +95,4 @@ for _, descendant in ipairs(Workspace:GetDescendants()) do
     end
 end
 
-print("[Client] Stats GUI Manager updated.")
+print("[Client] Stats GUI Manager updated with reference style.")
