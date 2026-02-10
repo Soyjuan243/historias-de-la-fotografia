@@ -109,29 +109,48 @@ Events.get("UpgradeBrainrot").OnServerEvent:Connect(function(player, platform)
     end
 end)
 
--- Initial Placement / Data Restore
+Events.get("PlaceBrainrot").OnServerEvent:Connect(function(player, platform, typeID)
+    if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
+    if platform:GetAttribute("IsOccupied") then return end
+
+    -- Check if player owns it
+    local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
+    local owned = HttpService:JSONDecode(ownedStr)
+
+    local ownsIt = false
+    local ownedIndex = -1
+    for i, id in ipairs(owned) do
+        if id == typeID then
+            ownsIt = true
+            ownedIndex = i
+            break
+        end
+    end
+
+    if ownsIt then
+        -- Remove from inventory (optional, depending on game design)
+        -- table.remove(owned, ownedIndex)
+        -- player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
+
+        BrainrotManager.spawnBrainrot(typeID, platform, 1)
+    end
+end)
+
+-- Initial Data Restore
 local function onPlayerAdded(player)
     local Platforms = Workspace:WaitForChild("Platforms")
-    -- Wait for platforms to be created
-    repeat task.wait() until #Platforms:GetChildren() >= 5
-
-    -- For this demo, the first player to join sets the levels on the global platforms
-    -- In a real game, each player would have their own platforms.
 
     -- Wait for data to be loaded by DataService
-    while not player:GetAttribute("BrainrotLevels") do
+    while not player:GetAttribute("PlatformStates") do
         task.wait()
     end
 
-    local brainrotLevels = HttpService:JSONDecode(player:GetAttribute("BrainrotLevels"))
-    local platformList = Platforms:GetChildren()
-    table.sort(platformList, function(a, b) return a.Name < b.Name end)
+    local states = HttpService:JSONDecode(player:GetAttribute("PlatformStates"))
 
-    local brainrotTypes = {"Common1", "Common2", "Common3", "Common4", "Common5"}
-
-    for i = 1, 5 do
-        if platformList[i] then
-            BrainrotManager.spawnBrainrot(brainrotTypes[i], platformList[i], brainrotLevels[i])
+    for platformName, state in pairs(states) do
+        local platform = Platforms:FindFirstChild(platformName)
+        if platform then
+            BrainrotManager.spawnBrainrot(state.TypeID, platform, state.Level)
         end
     end
 end

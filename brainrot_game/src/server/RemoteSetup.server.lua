@@ -11,5 +11,7 @@ end
 
 createRemote("CollectMoney")
 createRemote("UpgradeBrainrot")
+createRemote("PlaceBrainrot")
+createRemote("RequestInventory")
 
 print("[Server] Remote events initialized.")

@@ -1,46 +1,53 @@
-# Guía de Instalación en Roblox Studio
+# Guía de Instalación Manual (Roblox Studio)
 
-Si no estás usando Rojo, aquí tienes cómo organizar los archivos manualmente en el Explorer de Roblox Studio:
+Sigue estos pasos EXACTOS para configurar el juego. He dividido los scripts según su tipo y dónde deben ir.
 
-## 1. ReplicatedStorage (Lógica Compartida)
-Crea una carpeta llamada **Shared** y dentro coloca estos **ModuleScripts**:
+## 1. Preparación del Workspace (EL MAPA)
+1. En el **Explorer**, haz clic derecho en `Workspace` -> `Insert Object` -> `Folder`.
+2. Nómbrala exactamente: **Platforms**.
+3. **Tú pones las bases:** Dentro de esa carpeta, crea tus plataformas (usa `Part`).
+   - Puedes poner las que quieras. El script las detectará automáticamente.
+   - Asegúrate de que estén Ancladas (`Anchored = true`).
 
-*   **BrainrotData**: (Contenido de `src/shared/BrainrotData.lua`)
-*   **Events**: (Contenido de `src/shared/Events.lua`)
-*   **Utils**: (Contenido de `src/shared/Utils.lua`)
+## 2. ReplicatedStorage (Lógica Compartida)
+Crea una carpeta llamada **Shared** y dentro pon estos **ModuleScripts**:
 
-También crea una carpeta llamada **Remotes** directamente en ReplicatedStorage (el script `RemoteSetup` lo hará automáticamente, pero puedes crearla tú).
+*   **BrainrotData**: (Copia el código de `src/shared/BrainrotData.lua`)
+*   **Events**: (Copia el código de `src/shared/Events.lua`)
+*   **Utils**: (Copia el código de `src/shared/Utils.lua`)
 
-## 2. ServerScriptService (Lógica del Servidor)
-Crea estos **Scripts** (Scripts normales, no LocalScripts):
+## 3. ServerScriptService (Lógica del Servidor)
+Crea estos **Scripts** (Scripts normales, icono pergamino azul):
 
-*   **PlatformManager**: Maneja la creación de las 5 plataformas.
-*   **BrainrotManager**: Maneja las mejoras y la lógica de los personajes.
-*   **ProgressionService**: Maneja la generación de dinero por segundo.
-*   **DataService**: Maneja el guardado de datos (DataStore).
-*   **RemoteSetup**: Crea los eventos necesarios.
+*   **RemoteSetup**: Crea los eventos de red (¡Muy importante!).
+*   **PlatformManager**: Configura las bases que tú pusiste en el mapa.
+*   **BrainrotManager**: Maneja la colocación y mejoras de los brainrots.
+*   **ProgressionService**: Genera dinero cada segundo.
+*   **DataService**: Guarda el dinero y el inventario automáticamente.
 
-## 3. StarterPlayer -> StarterPlayerScripts (Lógica del Jugador)
-Crea estos **LocalScripts**:
+## 4. StarterPlayer -> StarterPlayerScripts (Lógica del Jugador)
+Crea estos **LocalScripts** (Icono pergamino con una persona):
 
-*   **StatsGuiManager**: Crea y actualiza las etiquetas sobre la cabeza de los brainrots.
-*   **InteractionManager**: Muestra la interfaz de botones (Recoger/Mejorar).
-
-## 4. Workspace
-Crea una carpeta llamada **Platforms** directamente en el Workspace. Aquí es donde el script `PlatformManager` pondrá las plataformas.
+*   **InventoryManager**: Crea el botón y el menú de tu inventario.
+*   **PlacementManager**: Te permite hacer clic en una base para poner el brainrot seleccionado.
+*   **StatsGuiManager**: Muestra la vida/dinero flotando sobre los personajes.
+*   **InteractionManager**: Muestra los botones de "Recoger" y "Mejorar" cuando estás cerca.
 
 ---
 
-### Resumen de Nombres y Tipos:
-| Nombre del Archivo | Tipo en Roblox | Ubicación Recomendada |
+### ¿Cómo jugar?
+1. Verás un botón de **INVENTARIO**. Al empezar, ya tienes 2 brainrots de prueba.
+2. Abre el inventario y haz clic en uno.
+3. Haz clic en una de las plataformas que pusiste en el mapa.
+4. ¡Listo! Empezará a generar dinero. Acércate para recogerlo o mejorarlo.
+
+### Resumen de tipos de objetos:
+| Nombre | Tipo de Objeto | Ubicación |
 | :--- | :--- | :--- |
-| `BrainrotData` | ModuleScript | ReplicatedStorage > Shared |
-| `Events` | ModuleScript | ReplicatedStorage > Shared |
-| `Utils` | ModuleScript | ReplicatedStorage > Shared |
-| `PlatformManager` | Script | ServerScriptService |
-| `BrainrotManager` | Script | ServerScriptService |
-| `ProgressionService`| Script | ServerScriptService |
-| `DataService` | Script | ServerScriptService |
-| `RemoteSetup` | Script | ServerScriptService |
-| `StatsGuiManager` | LocalScript | StarterPlayerScripts |
-| `InteractionManager`| LocalScript | StarterPlayerScripts |
+| `Platforms` | **Folder** | Workspace |
+| `Shared` | **Folder** | ReplicatedStorage |
+| `InventoryManager` | **LocalScript** | StarterPlayerScripts |
+| `RemoteSetup` | **Script** | ServerScriptService |
+| `BrainrotData` | **ModuleScript** | ReplicatedStorage > Shared |
+
+**Nota sobre DataStores:** El juego guarda tu dinero e inventario. Para que funcione en Studio, recuerda activar **"Enable Studio Access to API Services"** en Game Settings > Security.
