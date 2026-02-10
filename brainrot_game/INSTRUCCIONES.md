@@ -1,47 +1,54 @@
-# Guía de Instalación Manual (Roblox Studio)
+# Guía Paso a Paso para Instalar en Roblox Studio
 
-Sigue estos pasos EXACTOS para configurar el juego. He dividido los scripts según su tipo y dónde deben ir.
-
-## 1. Preparación del Workspace (EL MAPA)
-### Plataformas de Mejora:
-1. Crea una Carpeta (`Folder`) en `Workspace` llamada **Platforms**.
-2. Pon dentro tus partes (las bases donde se suben los personajes). ¡Asegúrate de que estén Ancladas!
-
-### Puntos de Aparición (Spawn):
-1. Crea una o varias partes (`Part`) donde quieras que aparezcan brainrots por el suelo.
-2. Nómbralas exactamente: **spawn1**.
-3. El juego hará aparecer personajes ahí cada 15 segundos. Si no los agarras en 30 segundos, desaparecerán.
-
-## 2. ReplicatedStorage (Lógica Compartida)
-Crea una carpeta llamada **Shared** y dentro pon estos **ModuleScripts**:
-*   **BrainrotData**: Datos de los personajes.
-*   **Events**: Control de eventos.
-*   **Utils**: Formateo de números.
-
-## 3. ServerScriptService (Lógica del Servidor)
-### ModuleScripts (Icono azul con interrogación/engranaje):
-*   **BrainrotManager**: (Copia el código de `src/server/BrainrotManager.lua`) - Maneja inventario y personajes.
-
-### Scripts (Icono pergamino azul):
-*   **Main**: (Copia `src/server/Main.server.lua`) - **¡IMPORTANTE!** Este script activa todo lo demás.
-*   **RemoteSetup**: Crea los eventos de red.
-*   **PlatformManager**: Configura las bases.
-*   **SpawningService**: Maneja la aparición de personajes en el suelo.
-*   **ProgressionService**: Genera dinero cada segundo.
-*   **DataService**: Guarda el dinero y el inventario.
-
-## 4. StarterPlayer -> StarterPlayerScripts (Lógica del Jugador)
-Crea estos **LocalScripts** (Icono pergamino con persona):
-*   **InventoryManager**: El menú del inventario.
-*   **PlacementManager**: Colocar personajes en las bases.
-*   **StatsGuiManager**: Etiquetas flotantes.
-*   **InteractionManager**: Botones de Recoger/Mejorar.
+¡Hola! Aquí tienes la explicación súper detallada. Sigue estos pasos uno por uno:
 
 ---
 
-### ¿Cómo jugar?
-1. Verás brainrots apareciendo en las partes llamadas **spawn1**. Acércate y usa la tecla **E** (o toca el botón) para agarrarlos.
-2. Abre tu **INVENTARIO**, selecciona uno y haz clic en una base de **Platforms** para ponerlo a trabajar.
-3. ¡Genera dinero y mejora tus personajes hasta el nivel 100!
+## 1. Preparación del Mapa (Workspace)
+1.  Busca la ventana **Explorer** (a la derecha).
+2.  Haz clic derecho en `Workspace` -> `Insert Object` -> `Folder`. Nómbrala: **Platforms**.
+3.  **Bases:** Crea partes (`Part`) dentro de esa carpeta. Son donde irán los personajes. Ponles **Anchored** en Propiedades.
+4.  **Spawns:** Crea partes en el suelo llamadas exactamente: **spawn1**.
 
-**Nota:** Recuerda activar "Studio Access to API Services" en la configuración del juego para que el guardado funcione.
+---
+
+## 2. ReplicatedStorage (Lógica Compartida)
+1.  Busca **ReplicatedStorage** en el Explorer.
+2.  Clic derecho -> `Insert Object` -> `Folder`. Nómbrala: **Shared**.
+3.  Dentro de **Shared**, crea 3 **ModuleScripts** (icono engranaje azul):
+    *   **BrainrotData**: Pega su código.
+    *   **Events**: Pega su código.
+    *   **Utils**: Pega su código.
+
+---
+
+## 3. ServerScriptService (Scripts del Servidor)
+Aquí controlamos la "magia" del juego.
+
+### Crea primero este ModuleScript (Icono engranaje azul):
+*   **BrainrotManager**: Pega el código de `src/server/BrainrotManager.lua`.
+
+### Ahora crea estos Scripts normales (Icono pergamino azul):
+*   **Main**: Pega el de `src/server/Main.server.lua`. (Este activa el Manager).
+*   **RemoteSetup**: Pega su código. (Crea la carpeta de eventos).
+*   **PlatformManager**: Pega su código. (Inicia las bases).
+*   **SpawningService**: Pega su código. (Aparecen personajes en el suelo).
+*   **ProgressionService**: Pega su código. (Da dinero).
+*   **DataService**: Pega su código. (Guarda el progreso).
+
+---
+
+## 4. StarterPlayer (Scripts del Jugador)
+1.  Busca **StarterPlayer** -> **StarterPlayerScripts**.
+2.  Crea **LocalScripts** (icono pergamino con personita):
+    *   **InventoryManager**: Menú de personajes.
+    *   **PlacementManager**: Poner personajes en bases.
+    *   **StatsGuiManager**: Textos sobre la cabeza.
+    *   **InteractionManager**: Botones Recoger/Mejorar.
+
+---
+
+### CONSEJOS FINALES:
+*   **Nombres:** Deben ser EXACTOS (ej. `Platforms` con P mayúscula).
+*   **Guardado:** Activa `Game Settings` -> `Security` -> **"Allow HTTP Requests"** y **"Enable Studio Access to API Services"**.
+*   **Un solo jugador:** Esta versión está diseñada para que tú pruebes el sistema. En una versión multijugador avanzada, cada jugador tendría su propia zona de plataformas.

@@ -1,5 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+
+-- Wait for the Remotes folder to be created by the server
+local Remotes = ReplicatedStorage:WaitForChild("Remotes", 5)
+
+if not Remotes then
+    warn("[Shared] Remotes folder not found. Waiting longer...")
+    Remotes = ReplicatedStorage:WaitForChild("Remotes")
+end
 
 local Events = {}
 

@@ -58,7 +58,7 @@ function BrainrotManager.addToInventory(player, typeID)
     local owned = HttpService:JSONDecode(ownedStr)
     table.insert(owned, typeID)
     player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
-    print("[BrainrotManager] Added " .. typeID .. " to " .. player.Name .. "'s inventory")
+    print("[BrainrotManager] Added " .. typeID .. " to " .. player.Name)
 end
 
 -- Remote Listeners
@@ -121,40 +121,30 @@ Events.get("PlaceBrainrot").OnServerEvent:Connect(function(player, platform, typ
     if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
     if platform:GetAttribute("IsOccupied") then return end
 
-    -- Check if player owns it
     local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
     local owned = HttpService:JSONDecode(ownedStr)
 
     local ownsIt = false
-    local ownedIndex = -1
-    for i, id in ipairs(owned) do
+    for _, id in ipairs(owned) do
         if id == typeID then
             ownsIt = true
-            ownedIndex = i
             break
         end
     end
 
     if ownsIt then
-        -- Optional: remove from inventory
-        -- table.remove(owned, ownedIndex)
-        -- player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
-
         BrainrotManager.spawnBrainrot(typeID, platform, 1)
     end
 end)
 
--- Initial Data Restore
 local function onPlayerAdded(player)
     local Platforms = Workspace:WaitForChild("Platforms")
 
-    -- Wait for data to be loaded by DataService
     while not player:GetAttribute("PlatformStates") do
         task.wait()
     end
 
     local states = HttpService:JSONDecode(player:GetAttribute("PlatformStates"))
-
     for platformName, state in pairs(states) do
         local platform = Platforms:FindFirstChild(platformName)
         if platform then
@@ -164,5 +154,8 @@ local function onPlayerAdded(player)
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)
+for _, player in ipairs(Players:GetPlayers()) do
+    task.spawn(onPlayerAdded, player)
+end
 
 return BrainrotManager

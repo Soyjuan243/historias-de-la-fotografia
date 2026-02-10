@@ -1,9 +1,8 @@
--- Initialize all server modules
+-- Initialize Server Logic
 local ServerScriptService = game:GetService("ServerScriptService")
 
+-- We only require ModuleScripts.
+-- Regular Scripts (like DataService, SpawningService) run automatically.
 require(ServerScriptService:WaitForChild("BrainrotManager"))
-require(ServerScriptService:WaitForChild("ProgressionService"))
-require(ServerScriptService:WaitForChild("DataService"))
-require(ServerScriptService:WaitForChild("SpawningService"))
 
-print("[Server] All services initialized.")
+print("[Server] Main logic initialized.")

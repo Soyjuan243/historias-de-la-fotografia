@@ -26,15 +26,14 @@ local function loadData(player)
 
     local money = Instance.new("NumberValue")
     money.Name = "Money"
-    money.Value = (data and data.Money) or 500 -- More starting money for testing
+    money.Value = (data and data.Money) or 500
     money.Parent = leaderstats
 
     -- Owned Brainrots list
-    local owned = (data and data.OwnedBrainrots) or {"Common1", "Common2"} -- Give 2 starters
+    local owned = (data and data.OwnedBrainrots) or {"Common1", "Common2"}
     player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
 
-    -- Active brainrot levels on platforms (specific to player)
-    -- In this version, we will save platform states in a table
+    -- Active platform states
     local platformStates = (data and data.PlatformStates) or {}
     player:SetAttribute("PlatformStates", HttpService:JSONEncode(platformStates))
 
@@ -47,12 +46,12 @@ local function saveData(player)
 
     local userId = player.UserId
 
-    -- Get current platform states for this player
-    -- For now, we still use global platforms but we'll save which ones were occupied
     local platformStates = {}
     local Platforms = Workspace:FindFirstChild("Platforms")
     if Platforms then
         for _, platform in ipairs(Platforms:GetChildren()) do
+            -- In Phase 1, we only save if the platform is occupied.
+            -- To make it multiplayer friendly, we would check platform ownership here.
             if platform:GetAttribute("IsOccupied") then
                 local brainrot = nil
                 for _, child in ipairs(platform:GetChildren()) do
@@ -77,18 +76,19 @@ local function saveData(player)
         PlatformStates = platformStates
     }
 
-    local success, err = pcall(function()
+    pcall(function()
         PlayerDataStore:SetAsync("User_" .. userId, data)
     end)
-
-    if not success then
-        warn("Failed to save data for " .. player.Name .. ": " .. err)
-    else
-        print("Data saved for " .. player.Name)
-    end
 end
 
+-- Handle players joining
 Players.PlayerAdded:Connect(loadData)
+
+-- Handle players who joined before the script ran
+for _, player in ipairs(Players:GetPlayers()) do
+    loadData(player)
+end
+
 Players.PlayerRemoving:Connect(saveData)
 
 game:BindToClose(function()

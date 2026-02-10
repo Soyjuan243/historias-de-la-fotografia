@@ -1,5 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+
+-- Create the Remotes folder if it doesn't exist
+local Remotes = ReplicatedStorage:FindFirstChild("Remotes")
+if not Remotes then
+    Remotes = Instance.new("Folder")
+    Remotes.Name = "Remotes"
+    Remotes.Parent = ReplicatedStorage
+end
 
 local function createRemote(name, className)
     if not Remotes:FindFirstChild(name) then
