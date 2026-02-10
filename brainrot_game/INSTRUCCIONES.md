@@ -1,54 +1,63 @@
-# Guía Paso a Paso para Instalar en Roblox Studio
+# 🚀 GUÍA RÁPIDA: ¿DÓNDE PONER LOS SCRIPTS?
 
-¡Hola! Aquí tienes la explicación súper detallada. Sigue estos pasos uno por uno:
+Si tienes dudas de dónde va cada cosa, mira esta tabla. Es lo más importante:
 
----
-
-## 1. Preparación del Mapa (Workspace)
-1.  Busca la ventana **Explorer** (a la derecha).
-2.  Haz clic derecho en `Workspace` -> `Insert Object` -> `Folder`. Nómbrala: **Platforms**.
-3.  **Bases:** Crea partes (`Part`) dentro de esa carpeta. Son donde irán los personajes. Ponles **Anchored** en Propiedades.
-4.  **Spawns:** Crea partes en el suelo llamadas exactamente: **spawn1**.
+| Tipo de Script | Icono en Studio | Ubicación en el Explorer |
+| :--- | :--- | :--- |
+| **Script Normal** | 📜 Pergamino Azul | **ServerScriptService** |
+| **LocalScript** | 📜 con Persona | **StarterPlayer > StarterPlayerScripts** |
+| **ModuleScript** | ⚙️ Engranaje Azul | **ReplicatedStorage > Shared** |
 
 ---
 
-## 2. ReplicatedStorage (Lógica Compartida)
-1.  Busca **ReplicatedStorage** en el Explorer.
-2.  Clic derecho -> `Insert Object` -> `Folder`. Nómbrala: **Shared**.
-3.  Dentro de **Shared**, crea 3 **ModuleScripts** (icono engranaje azul):
-    *   **BrainrotData**: Pega su código.
-    *   **Events**: Pega su código.
-    *   **Utils**: Pega su código.
+## 🛠️ PASO A PASO DETALLADO
+
+### 1. Los Scripts Normales (ServerScriptService)
+**¿Dónde van?** Busca la carpeta que se llama **ServerScriptService** (está casi al final del Explorer).
+**¿Qué hacen?** Son los que controlan el dinero, los niveles y el guardado.
+
+Crea estos 6 scripts ahí dentro (Clic derecho en ServerScriptService -> Insert Object -> Script):
+1.  **Main**: El código principal que arranca todo.
+2.  **RemoteSetup**: Configura los eventos de red.
+3.  **PlatformManager**: Controla las bases de tus personajes.
+4.  **SpawningService**: Hace que aparezcan personajes en el suelo.
+5.  **ProgressionService**: Maneja la ganancia de dinero.
+6.  **DataService**: Guarda el progreso cuando el jugador se va.
+
+*Nota: También debes crear el **ModuleScript** llamado **BrainrotManager** dentro de ServerScriptService.*
 
 ---
 
-## 3. ServerScriptService (Scripts del Servidor)
-Aquí controlamos la "magia" del juego.
+### 2. Los ModuleScripts (ReplicatedStorage)
+**¿Dónde van?** Busca **ReplicatedStorage**, crea una carpeta llamada **Shared** y ponlos ahí.
+**¿Qué hacen?** Guardan los datos de los personajes y funciones de utilidad.
 
-### Crea primero este ModuleScript (Icono engranaje azul):
-*   **BrainrotManager**: Pega el código de `src/server/BrainrotManager.lua`.
-
-### Ahora crea estos Scripts normales (Icono pergamino azul):
-*   **Main**: Pega el de `src/server/Main.server.lua`. (Este activa el Manager).
-*   **RemoteSetup**: Pega su código. (Crea la carpeta de eventos).
-*   **PlatformManager**: Pega su código. (Inicia las bases).
-*   **SpawningService**: Pega su código. (Aparecen personajes en el suelo).
-*   **ProgressionService**: Pega su código. (Da dinero).
-*   **DataService**: Pega su código. (Guarda el progreso).
+Crea estos 3 (Insert Object -> ModuleScript):
+*   **BrainrotData**
+*   **Events**
+*   **Utils**
 
 ---
 
-## 4. StarterPlayer (Scripts del Jugador)
-1.  Busca **StarterPlayer** -> **StarterPlayerScripts**.
-2.  Crea **LocalScripts** (icono pergamino con personita):
-    *   **InventoryManager**: Menú de personajes.
-    *   **PlacementManager**: Poner personajes en bases.
-    *   **StatsGuiManager**: Textos sobre la cabeza.
-    *   **InteractionManager**: Botones Recoger/Mejorar.
+### 3. Los LocalScripts (StarterPlayerScripts)
+**¿Dónde van?** Busca la carpeta **StarterPlayer**, abre la flechita, y busca **StarterPlayerScripts**.
+**¿Qué hacen?** Controlan lo que el jugador ve (Botones, Inventario, Textos flotantes).
+
+Crea estos 4 (Insert Object -> LocalScript):
+*   **InventoryManager**
+*   **PlacementManager**
+*   **StatsGuiManager**
+*   **InteractionManager**
 
 ---
 
-### CONSEJOS FINALES:
-*   **Nombres:** Deben ser EXACTOS (ej. `Platforms` con P mayúscula).
-*   **Guardado:** Activa `Game Settings` -> `Security` -> **"Allow HTTP Requests"** y **"Enable Studio Access to API Services"**.
-*   **Un solo jugador:** Esta versión está diseñada para que tú pruebes el sistema. En una versión multijugador avanzada, cada jugador tendría su propia zona de plataformas.
+### 4. Configuración del Mapa (Workspace)
+1.  Crea una Carpeta (`Folder`) llamada **Platforms** en el Workspace. Pon tus bases ahí dentro.
+2.  Crea Partes (`Part`) sueltas en el suelo y cámbiales el nombre a **spawn1** para que aparezcan personajes ahí.
+
+---
+
+### 💡 ÚLTIMO PASO OBLIGATORIO:
+Para que el dinero se guarde, ve a la pestaña **HOME** -> **Game Settings** -> **Security** y activa:
+*   ✅ **Allow HTTP Requests**
+*   ✅ **Enable Studio Access to API Services**
