@@ -13,32 +13,41 @@ local DESPAWN_TIME = 30
 
 local commonIDs = {"Common1", "Common2", "Common3", "Common4", "Common5"}
 
+-- Optimization: Cache spawn points on startup
+local cachedSpawnParts = {}
+
+local function updateSpawnCache()
+    cachedSpawnParts = {}
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj.Name == "spawn1" and obj:IsA("BasePart") then
+            table.insert(cachedSpawnParts, obj)
+        end
+    end
+end
+
+-- Initial cache and monitor for new spawns
+updateSpawnCache()
+Workspace.DescendantAdded:Connect(function(desc)
+    if desc.Name == "spawn1" and desc:IsA("BasePart") then table.insert(cachedSpawnParts, desc) end
+end)
+
 local function getRandomPositionInPart(part)
     local size = part.Size
     local cframe = part.CFrame
-
     local rx = (math.random() - 0.5) * size.X
     local rz = (math.random() - 0.5) * size.Z
-
-    -- Spawn on the top surface
     local topY = size.Y / 2
-
     return (cframe * CFrame.new(rx, topY + 2, rz)).Position
 end
 
 local function spawnWithinArea()
-    local spawns = {}
-    for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj.Name == "spawn1" and obj:IsA("BasePart") then
-            table.insert(spawns, obj)
-        end
-    end
+    if #cachedSpawnParts == 0 then return end
 
-    if #spawns == 0 then return end
-
-    local spawnPart = spawns[math.random(1, #spawns)]
+    local spawnPart = cachedSpawnParts[math.random(1, #cachedSpawnParts)]
     local typeID = commonIDs[math.random(1, #commonIDs)]
     local data = BrainrotData.Types[typeID]
+
+    if not data then return end
 
     local brainrot
     local modelTemplate = Models and Models:FindFirstChild(typeID)
@@ -46,16 +55,14 @@ local function spawnWithinArea()
     if modelTemplate then
         brainrot = modelTemplate:Clone()
         brainrot.Name = "Spawned_" .. typeID
-
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
         brainrot:PivotTo(CFrame.new(getRandomPositionInPart(spawnPart)) * randomRotation)
 
-        -- STRICT RECURSIVE ANCHORING
         if brainrot:IsA("BasePart") then brainrot.Anchored = true end
         for _, p in ipairs(brainrot:GetDescendants()) do
             if p:IsA("BasePart") then
                 p.Anchored = true
-                p.CanCollide = false -- Spawns on ground shouldn't block
+                p.CanCollide = false
             end
         end
     else
@@ -70,7 +77,6 @@ local function spawnWithinArea()
 
     brainrot.Parent = Workspace
 
-    -- UI logic for the loose brainrot
     local nameBillboard = Instance.new("BillboardGui")
     nameBillboard.Name = "NameBillboard"
     nameBillboard.Size = UDim2.new(0, 150, 0, 40)
@@ -82,7 +88,7 @@ local function spawnWithinArea()
     local nameText = Instance.new("TextLabel")
     nameText.Size = UDim2.new(1, 0, 1, 0)
     nameText.BackgroundTransparency = 1
-    nameText.Text = "¡" .. data.Name .. "!"
+    nameText.Text = "¡" .. (data.Name or "???") .. "!"
     nameText.TextColor3 = Color3.new(1, 1, 1)
     nameText.Font = Enum.Font.FredokaOne
     nameText.TextSize = 16
@@ -92,7 +98,6 @@ local function spawnWithinArea()
     nameStroke.Thickness = 2
     nameStroke.Parent = nameText
 
-    -- Timer Billboard
     local timerBillboard = Instance.new("BillboardGui")
     timerBillboard.Name = "TimerBillboard"
     timerBillboard.Size = UDim2.new(0, 100, 0, 50)
@@ -146,7 +151,7 @@ local function spawnWithinArea()
 
     local prompt = Instance.new("ProximityPrompt")
     prompt.ActionText = "Agarrar"
-    prompt.ObjectText = data.Name
+    prompt.ObjectText = data.Name or "Personaje"
     prompt.HoldDuration = 0
     prompt.Parent = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
 
@@ -157,7 +162,6 @@ local function spawnWithinArea()
         brainrot:Destroy()
     end)
 
-    -- Countdown Logic
     task.spawn(function()
         local timeLeft = DESPAWN_TIME
         while timeLeft > 0 and brainrot and brainrot.Parent and not brainrot:GetAttribute("IsCollected") do
@@ -168,7 +172,6 @@ local function spawnWithinArea()
                 timerText.Text = timeLeft .. "s"
             end
         end
-
         if timeLeft <= 0 and brainrot and brainrot.Parent and not brainrot:GetAttribute("IsCollected") then
             brainrot:Destroy()
         end
@@ -182,4 +185,4 @@ task.spawn(function()
     end
 end)
 
-print("[Server] Spawning Service: Spawning on top of spawn1 surfaces.")
+print("[Server] Spawning Service: Optimized area detection.")

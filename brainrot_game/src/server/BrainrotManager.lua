@@ -55,6 +55,9 @@ local function createCollectorPad(platform)
         local character = hit.Parent
         local player = Players:GetPlayerFromCharacter(character)
         if player then
+            local ownerId = platform:GetAttribute("OwnerID")
+            if ownerId ~= 0 and ownerId ~= player.UserId then return end
+
             local brainrot = nil
             for _, child in ipairs(platform:GetChildren()) do
                 if child:GetAttribute("IsBrainrot") then
@@ -76,7 +79,6 @@ local function createCollectorPad(platform)
         end
     end)
 
-    -- Update display text
     task.spawn(function()
         while pad and pad.Parent do
             local brainrot = nil
@@ -97,45 +99,88 @@ local function createCollectorPad(platform)
     end)
 end
 
--- Sync inventory with Tools
-function BrainrotManager.syncTools(player)
-    local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
-    local owned = HttpService:JSONDecode(ownedStr)
+function BrainrotManager.setupPlatformPrompt(platform)
+    if platform:FindFirstChild("PlacementPrompt") then return end
 
-    local backpack = player:FindFirstChild("Backpack")
-    local starterGear = player:FindFirstChild("StarterGear")
+    local prompt = Instance.new("ProximityPrompt")
+    prompt.Name = "PlacementPrompt"
+    prompt.ActionText = "Colocar Personaje"
+    prompt.ObjectText = platform.Name
+    prompt.KeyboardKeyCode = Enum.KeyCode.E
+    prompt.HoldDuration = 0.5
+    prompt.MaxActivationDistance = 10
+    prompt.RequiresLineOfSight = false
+    prompt.Parent = platform
 
-    if not backpack or not starterGear then return end
+    prompt.Triggered:Connect(function(player)
+        local character = player.Character
+        if not character then return end
 
-    -- Remove existing brainrot tools
-    for _, tool in ipairs(backpack:GetChildren()) do
-        if tool:GetAttribute("IsBrainrotTool") then tool:Destroy() end
-    end
-    for _, tool in ipairs(starterGear:GetChildren()) do
-        if tool:GetAttribute("IsBrainrotTool") then tool:Destroy() end
-    end
-    for _, child in ipairs(player.Character:GetChildren()) do
-        if child:IsA("Tool") and child:GetAttribute("IsBrainrotTool") then child:Destroy() end
-    end
+        local tool = character:FindFirstChildWhichIsA("Tool")
+        if tool and tool:GetAttribute("IsBrainrotTool") then
+            local typeID = tool:GetAttribute("BrainrotType")
 
-    for _, typeID in ipairs(owned) do
-        local data = BrainrotData.Types[typeID]
-        if data then
-            local tool = Instance.new("Tool")
-            tool.Name = data.Name
-            tool:SetAttribute("IsBrainrotTool", true)
-            tool:SetAttribute("BrainrotType", typeID)
-            tool.RequiresHandle = false
+            local ownerId = platform:GetAttribute("OwnerID") or 0
+            if ownerId ~= 0 and ownerId ~= player.UserId then return end
+            if platform:GetAttribute("IsOccupied") then return end
 
-            -- Tool behavior: Fire remote to place
-            -- This will be handled by PlacementManager.client.lua
+            BrainrotManager.spawnBrainrot(typeID, platform, 1)
+            platform:SetAttribute("OwnerID", player.UserId)
 
-            tool.Parent = backpack
+            tool:Destroy()
 
-            local clone = tool:Clone()
-            clone.Parent = starterGear
+            local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
+            local owned = HttpService:JSONDecode(ownedStr)
+            for i, id in ipairs(owned) do
+                if id == typeID then
+                    table.remove(owned, i)
+                    break
+                end
+            end
+            player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
         end
+    end)
+
+    task.spawn(function()
+        while prompt and prompt.Parent do
+            prompt.Enabled = not platform:GetAttribute("IsOccupied")
+            task.wait(1)
+        end
+    end)
+end
+
+function BrainrotManager.giveAndEquip(player, typeID, skipDataUpdate)
+    local data = BrainrotData.Types[typeID]
+    if not data then return end
+
+    if not skipDataUpdate then
+        local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
+        local owned = HttpService:JSONDecode(ownedStr)
+        table.insert(owned, typeID)
+        player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
     end
+
+    local tool = Instance.new("Tool")
+    tool.Name = data.Name
+    tool:SetAttribute("IsBrainrotTool", true)
+    tool:SetAttribute("BrainrotType", typeID)
+    tool.RequiresHandle = false
+
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        tool.Parent = character
+    else
+        tool.Parent = player:FindFirstChild("Backpack")
+    end
+
+    return tool
+end
+
+-- ALIAS to prevent Mismatch
+function BrainrotManager.addToInventory(player, typeID)
+    return BrainrotManager.giveAndEquip(player, typeID)
 end
 
 function BrainrotManager.spawnBrainrot(typeID, platform, level)
@@ -154,20 +199,16 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
 
     if modelTemplate then
         brainrot = modelTemplate:Clone()
-        brainrot.Name = data.Name
+        brainrot.Name = data.Name or "Brainrot"
         brainrot:PivotTo(CFrame.new(platform.Position + Vector3.new(0, 3, 0)))
 
-        -- STRICT RECURSIVE ANCHORING
         if brainrot:IsA("BasePart") then brainrot.Anchored = true end
         for _, p in ipairs(brainrot:GetDescendants()) do
-            if p:IsA("BasePart") then
-                p.Anchored = true
-                p.CanCollide = true
-            end
+            if p:IsA("BasePart") then p.Anchored = true end
         end
     else
         brainrot = Instance.new("Part")
-        brainrot.Name = data.Name
+        brainrot.Name = data.Name or "Brainrot"
         brainrot.Size = Vector3.new(4, 4, 4)
         brainrot.Position = platform.Position + Vector3.new(0, 3, 0)
         brainrot.Anchored = true
@@ -193,41 +234,10 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
     return brainrot
 end
 
-function BrainrotManager.addToInventory(player, typeID)
-    local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
-    local owned = HttpService:JSONDecode(ownedStr)
-    table.insert(owned, typeID)
-    player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
-    BrainrotManager.syncTools(player)
-end
-
 -- Remote Listeners
-Events.get("CollectMoney").OnServerEvent:Connect(function(player, platform)
-    -- This is now handled by Touched event, but keeping for backward compatibility
-    if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
-
-    local brainrot = nil
-    for _, child in ipairs(platform:GetChildren()) do
-        if child:GetAttribute("IsBrainrot") then
-            brainrot = child
-            break
-        end
-    end
-
-    if brainrot then
-        local money = brainrot:GetAttribute("GeneratedMoney") or 0
-        if money > 0 then
-            local leaderstats = player:FindFirstChild("leaderstats")
-            if leaderstats then
-                leaderstats.Money.Value = leaderstats.Money.Value + money
-                brainrot:SetAttribute("GeneratedMoney", 0)
-            end
-        end
-    end
-end)
-
 Events.get("UpgradeBrainrot").OnServerEvent:Connect(function(player, platform)
     if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
+    if platform:GetAttribute("OwnerID") ~= player.UserId then return end
 
     local brainrot = nil
     for _, child in ipairs(platform:GetChildren()) do
@@ -258,35 +268,9 @@ Events.get("UpgradeBrainrot").OnServerEvent:Connect(function(player, platform)
     end
 end)
 
-Events.get("PlaceBrainrot").OnServerEvent:Connect(function(player, platform, typeID)
-    if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
-    if platform:GetAttribute("IsOccupied") then return end
-
-    local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
-    local owned = HttpService:JSONDecode(ownedStr)
-
-    local ownsIt = false
-    local index = -1
-    for i, id in ipairs(owned) do
-        if id == typeID then
-            ownsIt = true
-            index = i
-            break
-        end
-    end
-
-    if ownsIt then
-        table.remove(owned, index)
-        player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
-        BrainrotManager.syncTools(player)
-
-        BrainrotManager.spawnBrainrot(typeID, platform, 1)
-    end
-end)
-
 Events.get("RemoveBrainrot").OnServerEvent:Connect(function(player, platform)
     if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
-    if not platform:GetAttribute("IsOccupied") then return end
+    if platform:GetAttribute("OwnerID") ~= player.UserId then return end
 
     local brainrot = nil
     for _, child in ipairs(platform:GetChildren()) do
@@ -303,27 +287,39 @@ Events.get("RemoveBrainrot").OnServerEvent:Connect(function(player, platform)
         brainrot:Destroy()
         platform:SetAttribute("IsOccupied", false)
         platform:SetAttribute("BrainrotID", "")
+        platform:SetAttribute("OwnerID", 0)
     end
 end)
 
 local function onPlayerAdded(player)
     local Platforms = Workspace:WaitForChild("Platforms")
-    for _, p in ipairs(Platforms:GetChildren()) do createCollectorPad(p) end
-    Platforms.ChildAdded:Connect(function(c) if c:IsA("BasePart") then createCollectorPad(c) end end)
+
+    for _, p in ipairs(Platforms:GetChildren()) do
+        createCollectorPad(p)
+        BrainrotManager.setupPlatformPrompt(p)
+        if not p:GetAttribute("OwnerID") then p:SetAttribute("OwnerID", 0) end
+    end
 
     while not player:GetAttribute("PlatformStates") do
         task.wait()
     end
 
+    -- 1. Restore platform brainrots
     local states = HttpService:JSONDecode(player:GetAttribute("PlatformStates"))
     for platformName, state in pairs(states) do
         local platform = Platforms:FindFirstChild(platformName)
-        if platform then
+        if platform and not platform:GetAttribute("IsOccupied") then
             BrainrotManager.spawnBrainrot(state.TypeID, platform, state.Level)
+            platform:SetAttribute("OwnerID", player.UserId)
         end
     end
 
-    BrainrotManager.syncTools(player)
+    -- 2. Restore Backpack tools
+    local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
+    local owned = HttpService:JSONDecode(ownedStr)
+    for _, typeID in ipairs(owned) do
+        BrainrotManager.giveAndEquip(player, typeID, true) -- true = skip data update as it's already in data
+    end
 end
 
 Players.PlayerAdded:Connect(onPlayerAdded)

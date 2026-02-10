@@ -76,8 +76,6 @@ local removeBtn = createStyledButton("RemoveButton", UDim2.new(0, 0, 0.55, 0), {
 removeBtn.Text = "QUITAR"
 removeBtn.Parent = frame
 
--- NOTE: Collection is now handled by the physical pad in Workspace (server-side Touched event)
-
 local currentPlatform = nil
 
 local function getNearestPlatform()
@@ -85,10 +83,11 @@ local function getNearestPlatform()
     if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
     local hrp = character.HumanoidRootPart
     local nearest = nil
-    local minDistance = 8 -- Reduced distance for better interaction
+    local minDistance = 8
 
     for _, platform in ipairs(Platforms:GetChildren()) do
-        if platform:GetAttribute("IsOccupied") then
+        -- Only show if occupied AND owned by me
+        if platform:GetAttribute("IsOccupied") and platform:GetAttribute("OwnerID") == player.UserId then
             local distance = (hrp.Position - platform.Position).Magnitude
             if distance < minDistance then
                 nearest = platform
@@ -100,6 +99,9 @@ local function getNearestPlatform()
 end
 
 RunService.RenderStepped:Connect(function()
+    local character = player.Character
+    local isHoldingSomething = character and character:FindFirstChildWhichIsA("Tool") ~= nil
+
     local nearest = getNearestPlatform()
 
     if nearest then
@@ -123,7 +125,9 @@ RunService.RenderStepped:Connect(function()
             else
                 upgradeBtn.Visible = false
             end
-            frame.Visible = true
+
+            -- Hide UI if player is holding a tool (to not clutter placement prompt)
+            frame.Visible = not isHoldingSomething
         else
             frame.Visible = false
         end
@@ -145,4 +149,4 @@ removeBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-print("[Client] Interaction Manager updated: Physical collection active, Screen UI for Upgrades.")
+print("[Client] Interaction Manager updated with ownership checks.")

@@ -7,7 +7,7 @@ local HttpService = game:GetService("HttpService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
 
-local PlayerDataStore = DataStoreService:GetDataStore("PlayerData_v2")
+local PlayerDataStore = DataStoreService:GetDataStore("PlayerData_v4") -- Increment version for stability
 
 local function loadData(player)
     local userId = player.UserId
@@ -29,11 +29,9 @@ local function loadData(player)
     money.Value = (data and data.Money) or 500
     money.Parent = leaderstats
 
-    -- Owned Brainrots list
     local owned = (data and data.OwnedBrainrots) or {"Common1", "Common2"}
     player:SetAttribute("OwnedBrainrots", HttpService:JSONEncode(owned))
 
-    -- Active platform states
     local platformStates = (data and data.PlatformStates) or {}
     player:SetAttribute("PlatformStates", HttpService:JSONEncode(platformStates))
 
@@ -50,9 +48,7 @@ local function saveData(player)
     local Platforms = Workspace:FindFirstChild("Platforms")
     if Platforms then
         for _, platform in ipairs(Platforms:GetChildren()) do
-            -- In Phase 1, we only save if the platform is occupied.
-            -- To make it multiplayer friendly, we would check platform ownership here.
-            if platform:GetAttribute("IsOccupied") then
+            if platform:GetAttribute("OwnerID") == player.UserId then
                 local brainrot = nil
                 for _, child in ipairs(platform:GetChildren()) do
                     if child:GetAttribute("IsBrainrot") then
@@ -70,24 +66,20 @@ local function saveData(player)
         end
     end
 
-    local data = {
-        Money = leaderstats.Money.Value,
-        OwnedBrainrots = HttpService:JSONDecode(player:GetAttribute("OwnedBrainrots") or "[]"),
-        PlatformStates = platformStates
-    }
-
+    -- Use UpdateAsync for better reliability in production
     pcall(function()
-        PlayerDataStore:SetAsync("User_" .. userId, data)
+        PlayerDataStore:UpdateAsync("User_" .. userId, function(oldData)
+            return {
+                Money = leaderstats.Money.Value,
+                OwnedBrainrots = HttpService:JSONDecode(player:GetAttribute("OwnedBrainrots") or "[]"),
+                PlatformStates = platformStates
+            }
+        end)
     end)
 end
 
--- Handle players joining
 Players.PlayerAdded:Connect(loadData)
-
--- Handle players who joined before the script ran
-for _, player in ipairs(Players:GetPlayers()) do
-    loadData(player)
-end
+for _, player in ipairs(Players:GetPlayers()) do loadData(player) end
 
 Players.PlayerRemoving:Connect(saveData)
 
@@ -97,4 +89,4 @@ game:BindToClose(function()
     end
 end)
 
-print("[Server] Data Service initialized.")
+print("[Server] Data Service: Production-ready logic active.")
