@@ -25,8 +25,8 @@ local function createAnnouncementGui()
     label.BackgroundTransparency = 1
     label.Text = ""
     label.TextColor3 = Color3.new(1, 1, 1) -- White
-    label.Font = Enum.Font.SourceSansBold
-    label.TextSize = 35
+    label.Font = Enum.Font.FredokaOne
+    label.TextSize = 40
     label.TextStrokeTransparency = 0.5
     label.TextStrokeColor3 = Color3.new(0,0,0)
     label.TextScaled = false -- Don't scale, use fixed size for cleaner look like in image
@@ -64,20 +64,23 @@ local function showScreenAnnouncement(text)
 end
 
 local function displaySystemMessage(text)
+    print("[Client] Recibido SystemMessage:", text)
     -- Mostrar en pantalla
     showScreenAnnouncement(text)
 
     -- Intentar usar el sistema moderno (TextChatService)
     if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
         -- En TextChatService, los mensajes del sistema se pueden enviar a canales
-        -- Pero DisplaySystemMessage es un método del canal.
-        -- Buscamos el canal general
-        local generalChannel = TextChatService:WaitForChild("TextChannels"):FindFirstChild("RBXGeneral")
-        if generalChannel then
-            generalChannel:DisplaySystemMessage("<font color='#FFD700'>[SISTEMA]</font> " .. text)
+        local textChannels = TextChatService:WaitForChild("TextChannels", 5)
+        if textChannels then
+            local generalChannel = textChannels:WaitForChild("RBXGeneral", 5)
+            if generalChannel then
+                generalChannel:DisplaySystemMessage("<font color='#FFD700'>[SISTEMA]</font> " .. text)
+            else
+                warn("[ChatManager] No se encontró el canal RBXGeneral tras esperar")
+            end
         else
-            -- Fallback si no hay canal general
-            warn("[ChatManager] No se encontró el canal RBXGeneral")
+            warn("[ChatManager] No se encontró el contenedor TextChannels")
         end
     else
         -- Sistema antiguo (Legacy Chat)

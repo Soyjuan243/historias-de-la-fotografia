@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local RunService = game:GetService("RunService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
 local BrainrotManager = require(ServerScriptService:WaitForChild("BrainrotManager"))
@@ -9,6 +10,7 @@ local Events = require(Shared:WaitForChild("Events"))
 local MessagingService = game:GetService("MessagingService")
 
 local Models = ReplicatedStorage:FindFirstChild("Models")
+local ServerId = game.JobId
 
 -- Configuración de usuarios autorizados
 local AUTHORIZED_IDS = {
@@ -17,6 +19,8 @@ local AUTHORIZED_IDS = {
 }
 
 local function isAuthorized(player)
+    -- Facilitar pruebas en Studio
+    if RunService:IsStudio() then return true end
     -- El creador del juego siempre está autorizado
     if player.UserId == game.CreatorId then return true end
     -- Verificar lista de IDs
@@ -29,25 +33,35 @@ local function isAuthorized(player)
 end
 
 local function broadcastGlobalMessage(text)
-    -- Fire locally first so the sender server sees it immediately
-    Events.get("SystemMessage"):FireAllClients(text)
+    print("[AdminCommand] Broadcasting global message:", text)
 
     local data = {
         Text = text,
-        Time = os.time()
+        Time = os.time(),
+        SourceId = ServerId
     }
+
+    -- Fire locally first so the sender server sees it immediately
+    Events.get("SystemMessage"):FireAllClients(text)
+
     pcall(function()
         MessagingService:PublishAsync("GlobalAnnouncements", data)
     end)
 end
 
 -- Subscribe to global messages
-MessagingService:SubscribeAsync("GlobalAnnouncements", function(message)
-    local data = message.Data
-    -- To avoid duplicate messages on the sender server, we could check a JobId or similar,
-    -- but for simplicity and reliability in inter-server communication, we'll just handle it.
-    -- MessagingService doesn't always send back to the same server, but if it does:
-    Events.get("SystemMessage"):FireAllClients(data.Text)
+pcall(function()
+    MessagingService:SubscribeAsync("GlobalAnnouncements", function(message)
+        local data = message.Data
+
+        -- To avoid duplicate messages on the sender server
+        if data.SourceId == ServerId and ServerId ~= "" then
+            return
+        end
+
+        print("[AdminCommand] Received global message from other server:", data.Text)
+        Events.get("SystemMessage"):FireAllClients(data.Text)
+    end)
 end)
 
 local function spawnBrainrotInSpawn1(player, typeID)
