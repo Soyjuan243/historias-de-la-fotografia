@@ -8,6 +8,7 @@ local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
 local BrainrotManager = require(ServerScriptService:WaitForChild("BrainrotManager"))
 local Events = require(Shared:WaitForChild("Events"))
 local MessagingService = game:GetService("MessagingService")
+local TextChatService = game:GetService("TextChatService")
 
 local Models = ReplicatedStorage:FindFirstChild("Models")
 local ServerId = game.JobId
@@ -34,6 +35,9 @@ end
 
 local function broadcastGlobalMessage(text)
     print("[AdminCommand] Broadcasting global message:", text)
+
+    -- Verificación de seguridad básica antes de mandar
+    if not text or text == "" then return end
 
     local data = {
         Text = text,
@@ -161,6 +165,14 @@ end
 local function onChatted(player, message)
     if not isAuthorized(player) then return end
 
+    -- Si es TextChatService, ignoramos Chatted para evitar doble ejecución de comandos
+    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+        -- Solo si el mensaje parece un comando registrado
+        if message:sub(1,6):lower() == "/spawn" or message:sub(1,7):lower() == "/global" then
+            return
+        end
+    end
+
     local args = string.split(message, " ")
     local command = args[1]:lower()
 
@@ -175,8 +187,59 @@ local function onChatted(player, message)
     end
 end
 
+-- Configuración de TextChatService (Moderno)
+local function setupTextCommands()
+    -- Solo si se usa TextChatService
+    if TextChatService.ChatVersion ~= Enum.ChatVersion.TextChatService then return end
+
+    local commandsFolder = TextChatService:FindFirstChild("TextCommands")
+    if not commandsFolder then
+        -- En algunos entornos no existe, lo creamos o usamos TextChatService directamente
+        commandsFolder = TextChatService
+    end
+
+    -- Comando /spawn
+    local spawnCmd = Instance.new("TextChatCommand")
+    spawnCmd.Name = "AdminSpawnCommand"
+    spawnCmd.PrimaryAlias = "/spawn"
+    spawnCmd.Parent = commandsFolder
+    spawnCmd.Triggered:Connect(function(originSource, unfilteredText)
+        local player = Players:GetPlayerByUserId(originSource.UserId)
+        if not player or not isAuthorized(player) then return end
+
+        local args = string.split(unfilteredText, " ")
+        if args[2] then
+            print("[AdminCommand] /spawn detectado vía TextChatCommand por:", player.Name)
+            spawnBrainrotInSpawn1(player, args[2])
+        end
+    end)
+
+    -- Comando /global
+    local globalCmd = Instance.new("TextChatCommand")
+    globalCmd.Name = "AdminGlobalCommand"
+    globalCmd.PrimaryAlias = "/global"
+    globalCmd.SecondaryAlias = "/announcement"
+    globalCmd.Parent = commandsFolder
+    globalCmd.Triggered:Connect(function(originSource, unfilteredText)
+        local player = Players:GetPlayerByUserId(originSource.UserId)
+        if not player or not isAuthorized(player) then return end
+
+        local args = string.split(unfilteredText, " ")
+        local msgText = table.concat(args, " ", 2)
+        if msgText and msgText ~= "" then
+            print("[AdminCommand] /global detectado vía TextChatCommand por:", player.Name)
+            broadcastGlobalMessage("[GLOBAL] " .. player.Name .. ": " .. msgText)
+        end
+    end)
+end
+
+setupTextCommands()
+
+-- Fallback para Legacy Chat
 Players.PlayerAdded:Connect(function(player)
     player.Chatted:Connect(function(msg)
+        -- Si es TextChatService, el evento Chatted puede dispararse pero preferimos TextChatCommand
+        -- Sin embargo, lo dejamos como fallback seguro
         onChatted(player, msg)
     end)
 end)

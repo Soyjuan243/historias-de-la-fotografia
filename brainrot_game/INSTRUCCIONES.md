@@ -65,3 +65,9 @@ He añadido un sistema de comandos para administradores que funciona **entre tod
 He añadido protecciones. Si ves ese error, es porque algún personaje en tu lista de `BrainrotData` no tiene un **Name**. Revisa que todos tengan nombre.
 
 Recuerda activar **"Enable Studio Access to API Services"** en Game Settings -> Security.
+
+### 🔧 NOTA SOBRE LOS MENSAJES GLOBALES
+Si los mensajes no aparecen en pantalla:
+1. Asegúrate de que el script **RemoteSetup** haya creado el evento `SystemMessage` en `ReplicatedStorage > Remotes`.
+2. Para que el sistema inter-servidor funcione, el juego **debe estar publicado** en Roblox y tener los servicios de API activados.
+3. En Roblox Studio, los mensajes solo aparecerán para ti (no viajarán a otros servidores ya que Studio es un entorno local).

@@ -11,55 +11,73 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Crear GUI de Anuncio en pantalla si no existe
-local function createAnnouncementGui()
-    local screen = Instance.new("ScreenGui")
-    screen.Name = "AnnouncementGui"
-    screen.ResetOnSpawn = false
-    screen.DisplayOrder = 100
-    screen.Parent = playerGui
+-- Contenedor de anuncios
+local announcementScreen = Instance.new("ScreenGui")
+announcementScreen.Name = "AnnouncementGui"
+announcementScreen.ResetOnSpawn = false
+announcementScreen.DisplayOrder = 100
+announcementScreen.Parent = playerGui
 
-    local label = Instance.new("TextLabel")
-    label.Name = "MessageLabel"
-    label.Size = UDim2.new(1, 0, 0.15, 0)
-    label.Position = UDim2.new(0, 0, 0.02, 0) -- Higher up
-    label.BackgroundTransparency = 1
-    label.Text = ""
-    label.TextColor3 = Color3.new(1, 1, 1) -- White
-    label.Font = Enum.Font.FredokaOne
-    label.TextSize = 40
-    label.TextStrokeTransparency = 0.5
-    label.TextStrokeColor3 = Color3.new(0,0,0)
-    label.TextScaled = false -- Don't scale, use fixed size for cleaner look like in image
-    label.Parent = screen
-
-    local uiPadding = Instance.new("UIPadding")
-    uiPadding.PaddingLeft = UDim.new(0.1, 0)
-    uiPadding.PaddingRight = UDim.new(0.1, 0)
-    uiPadding.Parent = label
-
-    return label
-end
-
-local announcementLabel = createAnnouncementGui()
+local activeLabels = {}
 
 local function showScreenAnnouncement(text)
-    announcementLabel.Text = text
-    announcementLabel.TextTransparency = 1
-    announcementLabel.TextStrokeTransparency = 1
+    -- Crear una nueva etiqueta para cada mensaje para permitir que se apilen o no se sobrepongan
+    local label = Instance.new("TextLabel")
+    label.Name = "AnnouncementMessage"
+    label.Size = UDim2.new(1, 0, 0.05, 0)
+    -- Posición inicial (arriba)
+    label.Position = UDim2.new(0, 0, -0.1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.new(1, 1, 1) -- Blanco
+    label.Font = Enum.Font.FredokaOne
+    label.TextSize = 35
+    label.TextStrokeTransparency = 0.5
+    label.TextStrokeColor3 = Color3.new(0, 0, 0)
+    label.TextTransparency = 1
+    label.TextStrokeTransparency = 1
+    label.Parent = announcementScreen
 
-    local fadeIn = TweenService:Create(announcementLabel, TweenInfo.new(0.5), {
+    local uiPadding = Instance.new("UIPadding")
+    uiPadding.PaddingLeft = UDim.new(0.05, 0)
+    uiPadding.PaddingRight = UDim.new(0.05, 0)
+    uiPadding.Parent = label
+
+    -- Si es un mensaje de sistema, ponerlo en Oro
+    if text:find("%[SISTEMA%]") or text:find("%[GLOBAL%]") then
+        label.TextColor3 = Color3.fromRGB(255, 215, 0) -- Oro
+    end
+
+    table.insert(activeLabels, label)
+
+    -- Ajustar posiciones de labels activos
+    for i, activeLabel in ipairs(activeLabels) do
+        local targetY = 0.02 + ((#activeLabels - i) * 0.06)
+        TweenService:Create(activeLabel, TweenInfo.new(0.3), {
+            Position = UDim2.new(0, 0, targetY, 0)
+        }):Play()
+    end
+
+    -- Fade In
+    TweenService:Create(label, TweenInfo.new(0.5), {
         TextTransparency = 0,
-        TextStrokeTransparency = 0
-    })
+        TextStrokeTransparency = 0.5
+    }):Play()
 
-    fadeIn:Play()
-
-    task.delay(5, function()
-        local fadeOut = TweenService:Create(announcementLabel, TweenInfo.new(1), {
+    -- Desvanecer y destruir después de un tiempo
+    task.delay(7, function()
+        local fadeOut = TweenService:Create(label, TweenInfo.new(1), {
             TextTransparency = 1,
             TextStrokeTransparency = 1
         })
         fadeOut:Play()
+        fadeOut.Completed:Connect(function()
+            local index = table.find(activeLabels, label)
+            if index then
+                table.remove(activeLabels, index)
+            end
+            label:Destroy()
+        end)
     end)
 end
 
