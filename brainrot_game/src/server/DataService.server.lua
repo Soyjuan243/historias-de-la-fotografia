@@ -40,7 +40,10 @@ end
 
 local function saveData(player)
     local leaderstats = player:FindFirstChild("leaderstats")
-    if not leaderstats then return end
+    if not leaderstats then
+        warn("No leaderstats found for " .. player.Name .. ", skipping save.")
+        return
+    end
 
     local userId = player.UserId
 
@@ -64,17 +67,21 @@ local function saveData(player)
                         TypeID = brainrot:GetAttribute("BrainrotType"),
                         Level = brainrot:GetAttribute("Level")
                     }
+                    print("[DataService] Saving platform:", platform.Name, "with", brainrot:GetAttribute("BrainrotType"))
                 end
             end
         end
     end
+
+    local owned = HttpService:JSONDecode(player:GetAttribute("OwnedBrainrots") or "[]")
+    print("[DataService] Saving", #owned, "brainrots in inventory for", player.Name)
 
     -- Use UpdateAsync for better reliability in production
     local success, err = pcall(function()
         PlayerDataStore:UpdateAsync("User_" .. userId, function(oldData)
             return {
                 Money = leaderstats.Money.Value,
-                OwnedBrainrots = HttpService:JSONDecode(player:GetAttribute("OwnedBrainrots") or "[]"),
+                OwnedBrainrots = owned,
                 PlatformStates = platformStates
             }
         end)

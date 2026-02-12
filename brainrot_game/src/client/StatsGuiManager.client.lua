@@ -19,9 +19,9 @@ local function createStatsGui(brainrot)
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "StatsGui"
-    billboard.Size = UDim2.new(6, 0, 3, 0)
+    billboard.Size = UDim2.new(0, 200, 0, 100)
     billboard.Adornee = adornee
-    billboard.StudsOffset = Vector3.new(0, 5, 0)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.AlwaysOnTop = true
     billboard.MaxDistance = 60
 

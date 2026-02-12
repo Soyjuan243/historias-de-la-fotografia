@@ -83,32 +83,32 @@ end
 
 local function displaySystemMessage(text)
     print("[Client] Recibido SystemMessage:", text)
-    -- Mostrar en pantalla
+    -- Mostrar siempre en pantalla (GUI propia)
     showScreenAnnouncement(text)
 
-    -- Intentar usar el sistema moderno (TextChatService)
-    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        -- En TextChatService, los mensajes del sistema se pueden enviar a canales
-        local textChannels = TextChatService:WaitForChild("TextChannels", 5)
-        if textChannels then
-            local generalChannel = textChannels:WaitForChild("RBXGeneral", 5)
-            if generalChannel then
-                generalChannel:DisplaySystemMessage("<font color='#FFD700'>[SISTEMA]</font> " .. text)
-            else
-                warn("[ChatManager] No se encontró el canal RBXGeneral tras esperar")
+    -- Intentar enviar al chat
+    task.spawn(function()
+        if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+            local textChannels = TextChatService:FindFirstChild("TextChannels") or TextChatService:WaitForChild("TextChannels", 5)
+            if textChannels then
+                local generalChannel = textChannels:FindFirstChild("RBXGeneral") or textChannels:WaitForChild("RBXGeneral", 5)
+                if generalChannel then
+                    generalChannel:DisplaySystemMessage("<font color='#FFD700'>[SISTEMA]</font> " .. text)
+                    return
+                end
             end
-        else
-            warn("[ChatManager] No se encontró el contenedor TextChannels")
         end
-    else
-        -- Sistema antiguo (Legacy Chat)
-        StarterGui:SetCore("ChatMakeSystemMessage", {
-            Text = "[SISTEMA] " .. text,
-            Color = Color3.fromRGB(255, 215, 0), -- Oro
-            Font = Enum.Font.FredokaOne,
-            TextSize = 18
-        })
-    end
+
+        -- Fallback: StarterGui (Legacy) o si falla TextChatService
+        pcall(function()
+            StarterGui:SetCore("ChatMakeSystemMessage", {
+                Text = "[SISTEMA] " .. text,
+                Color = Color3.fromRGB(255, 215, 0), -- Oro
+                Font = Enum.Font.FredokaOne,
+                TextSize = 18
+            })
+        end)
+    end)
 end
 
 -- Escuchar eventos del servidor

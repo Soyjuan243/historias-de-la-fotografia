@@ -13,10 +13,14 @@ if not PlatformsFolder then
 end
 
 local function initializePlatform(platform, index)
+    -- Rename platform to ensure uniqueness for data saving
+    platform.Name = "Platform" .. index
+
     -- Attributes for state management
     platform:SetAttribute("PlatformIndex", index)
     platform:SetAttribute("IsOccupied", false)
     platform:SetAttribute("BrainrotID", "")
+    platform:SetAttribute("OwnerID", 0)
 
     print("[Server] Initialized platform: " .. platform.Name)
 end

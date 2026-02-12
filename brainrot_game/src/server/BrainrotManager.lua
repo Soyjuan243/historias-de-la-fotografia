@@ -27,8 +27,8 @@ local function createCollectorPad(platform)
 
     local pad = Instance.new("Part")
     pad.Name = "CollectorPad"
-    pad.Size = Vector3.new(6, 0.5, 6)
-    pad.Position = platform.Position + Vector3.new(0, 0.5, 0)
+    pad.Size = Vector3.new(4, 0.2, 2) -- Mas pequeño y rectangular
+    pad.Position = platform.Position + Vector3.new(0, (platform.Size.Y / 2) + 0.1, 3) -- Un poco desplazado para que no estorbe al centro
     pad.Anchored = true
     pad.CanCollide = false
     pad.Transparency = 0.5
@@ -51,7 +51,10 @@ local function createCollectorPad(platform)
     text.TextScaled = true
     text.Parent = billboard
 
+    local isCollecting = false
     pad.Touched:Connect(function(hit)
+        if isCollecting then return end
+
         local character = hit.Parent
         local player = Players:GetPlayerFromCharacter(character)
         if player then
@@ -69,11 +72,14 @@ local function createCollectorPad(platform)
             if brainrot then
                 local money = brainrot:GetAttribute("GeneratedMoney") or 0
                 if money > 0 then
+                    isCollecting = true
                     local leaderstats = player:FindFirstChild("leaderstats")
                     if leaderstats then
                         leaderstats.Money.Value = leaderstats.Money.Value + money
                         brainrot:SetAttribute("GeneratedMoney", 0)
                     end
+                    task.wait(0.5) -- Debounce delay
+                    isCollecting = false
                 end
             end
         end
@@ -164,7 +170,39 @@ function BrainrotManager.giveAndEquip(player, typeID, skipDataUpdate)
     tool.Name = data.Name
     tool:SetAttribute("IsBrainrotTool", true)
     tool:SetAttribute("BrainrotType", typeID)
-    tool.RequiresHandle = false
+    tool.RequiresHandle = true -- Habilitado para que se vea el Handle
+
+    -- Crear Handle (parte invisible que se agarra)
+    local handle = Instance.new("Part")
+    handle.Name = "Handle"
+    handle.Size = Vector3.new(1, 1, 1)
+    handle.Transparency = 1
+    handle.CanCollide = false
+    handle.Parent = tool
+
+    -- Clonar el modelo para que se vea en la mano
+    local modelTemplate = Models and Models:FindFirstChild(typeID)
+    if modelTemplate then
+        local model = modelTemplate:Clone()
+        model.Name = "VisualModel"
+        -- Escalar un poco para que no sea gigante en la mano si es necesario
+        -- Pero por ahora solo lo posicionamos
+        model:PivotTo(handle.CFrame * CFrame.Angles(0, 0, math.rad(-90)))
+        model.Parent = tool
+
+        -- Soldar el modelo al Handle
+        for _, part in ipairs(model:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+                part.Anchored = false
+                part.Massless = true
+                local weld = Instance.new("WeldConstraint")
+                weld.Part0 = handle
+                weld.Part1 = part
+                weld.Parent = part
+            end
+        end
+    end
 
     local character = player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -201,15 +239,15 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
         brainrot = modelTemplate:Clone()
         brainrot.Name = data.Name or "Brainrot"
 
-        -- Apply correction first to get correct height (90, 0, 90)
-        brainrot:PivotTo(CFrame.Angles(math.rad(90), 0, math.rad(90)))
+        -- Apply correction first to get correct height (-90 on Z)
+        brainrot:PivotTo(CFrame.Angles(0, 0, math.rad(-90)))
 
         -- Calculate precise positioning on platform
         local modelSize = brainrot:GetExtentsSize()
         local platformSize = platform.Size
         local pivotOffset = (platformSize.Y / 2) + (modelSize.Y / 2)
 
-        local correctionRotation = CFrame.Angles(math.rad(90), 0, math.rad(90))
+        local correctionRotation = CFrame.Angles(0, 0, math.rad(-90))
         brainrot:PivotTo(platform.CFrame * CFrame.new(0, pivotOffset, 0) * correctionRotation)
         brainrot.Parent = platform
 
