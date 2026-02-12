@@ -11,41 +11,82 @@ local Models = ReplicatedStorage:FindFirstChild("Models")
 local SPAWN_INTERVAL = 10
 local DESPAWN_TIME = 30
 
-local commonIDs = {"Common1", "Common2", "Common3", "Common4", "Common5"}
+local commonIDs = {"Common1", "Common2", "Common3", "Common4", "Common5", "CommonGold1", "CommonGold2", "CommonGold3", "CommonGold4", "CommonGold5"}
+local uncommonIDs = {"Uncommon1", "Uncommon2", "Uncommon3", "Uncommon4", "Uncommon5"}
+local rareIDs = {"Rare1", "Rare2", "Rare3", "Rare4", "Rare5"}
+local legendaryIDs = {"Legendary1", "Legendary2", "Legendary3", "Legendary4", "Legendary5"}
 
--- Optimization: Cache spawn points on startup
-local cachedSpawnParts = {}
+-- Optimization: Cache spawn points
+local spawn1Parts = {}
+local spawn2Parts = {}
 
 local function updateSpawnCache()
-    cachedSpawnParts = {}
+    spawn1Parts = {}
+    spawn2Parts = {}
     for _, obj in ipairs(Workspace:GetDescendants()) do
-        if obj.Name == "spawn1" and obj:IsA("BasePart") then
-            table.insert(cachedSpawnParts, obj)
+        if obj:IsA("BasePart") then
+            if obj.Name == "spawn1" then
+                table.insert(spawn1Parts, obj)
+            elseif obj.Name == "spawn2" then
+                table.insert(spawn2Parts, obj)
+            end
         end
     end
 end
 
--- Initial cache and monitor for new spawns
 updateSpawnCache()
 Workspace.DescendantAdded:Connect(function(desc)
-    if desc.Name == "spawn1" and desc:IsA("BasePart") then table.insert(cachedSpawnParts, desc) end
+    if desc:IsA("BasePart") then
+        if desc.Name == "spawn1" then table.insert(spawn1Parts, desc)
+        elseif desc.Name == "spawn2" then table.insert(spawn2Parts, desc) end
+    end
 end)
 
 local function getRandomPositionInPart(part)
     local size = part.Size
-    local rx = (math.random() - 0.5) * (size.X * 0.8) -- Use 80% to avoid edges
+    local rx = (math.random() - 0.5) * (size.X * 0.8)
     local rz = (math.random() - 0.5) * (size.Z * 0.8)
     local topY = size.Y / 2
-
-    -- Return CFrame to preserve orientation if the part is rotated
     return part.CFrame * CFrame.new(rx, topY, rz)
 end
 
-local function spawnWithinArea()
-    if #cachedSpawnParts == 0 then return end
+local function selectType(spawnType)
+    local roll = math.random(1, 100)
+    local targetList = {}
 
-    local spawnPart = cachedSpawnParts[math.random(1, #cachedSpawnParts)]
-    local typeID = commonIDs[math.random(1, #commonIDs)]
+    if spawnType == "spawn1" then
+        -- Spawn 1: 80% Común, 20% Poco Común
+        if roll <= 80 then
+            targetList = commonIDs
+        else
+            targetList = uncommonIDs
+        end
+    else
+        -- Spawn 2: 40% Común, 30% Poco Común, 20% Raro, 10% Legendario
+        if roll <= 40 then
+            targetList = commonIDs
+        elseif roll <= 70 then
+            targetList = uncommonIDs
+        elseif roll <= 90 then
+            targetList = rareIDs
+        else
+            targetList = legendaryIDs
+        end
+    end
+
+    return targetList[math.random(1, #targetList)]
+end
+
+local function spawnWithinArea()
+    local allSpawnParts = {}
+    for _, p in ipairs(spawn1Parts) do table.insert(allSpawnParts, p) end
+    for _, p in ipairs(spawn2Parts) do table.insert(allSpawnParts, p) end
+
+    if #allSpawnParts == 0 then return end
+
+    local spawnPart = allSpawnParts[math.random(1, #allSpawnParts)]
+    local spawnType = spawnPart.Name
+    local typeID = selectType(spawnType)
     local data = BrainrotData.Types[typeID]
 
     if not data then return end
@@ -57,11 +98,8 @@ local function spawnWithinArea()
         brainrot = modelTemplate:Clone()
         brainrot.Name = "Spawned_" .. typeID
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
-
-        -- Apply correction first to get correct height (-90 on Z)
         brainrot:PivotTo(CFrame.Angles(0, 0, math.rad(-90)))
 
-        -- Positioning: Calculate model height to spawn exactly on top
         local modelSize = brainrot:GetExtentsSize()
         local pivotOffset = modelSize.Y / 2
 
@@ -90,11 +128,12 @@ local function spawnWithinArea()
         brainrot.Anchored = true
         brainrot.CanCollide = false
         brainrot.CanTouch = false
-        brainrot.BrickColor = BrickColor.new("Bright green")
+        brainrot.BrickColor = (data.Category == "Legendario" and BrickColor.new("Deep orange")) or (data.Category == "Raro" and BrickColor.new("Bright violet")) or BrickColor.new("Bright green")
     end
 
     brainrot.Parent = Workspace
 
+    -- UI Billboard for Name
     local nameBillboard = Instance.new("BillboardGui")
     nameBillboard.Name = "NameBillboard"
     nameBillboard.Size = UDim2.new(0, 150, 0, 40)
@@ -116,6 +155,7 @@ local function spawnWithinArea()
     nameStroke.Thickness = 2
     nameStroke.Parent = nameText
 
+    -- Timer UI
     local timerBillboard = Instance.new("BillboardGui")
     timerBillboard.Name = "TimerBillboard"
     timerBillboard.Size = UDim2.new(0, 100, 0, 50)
@@ -203,4 +243,4 @@ task.spawn(function()
     end
 end)
 
--- print("[Server] Spawning Service: Optimized area detection.")
+-- print("[Server] Spawning Service: Zone-based weights enabled.")

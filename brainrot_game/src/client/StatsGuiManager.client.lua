@@ -6,10 +6,17 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BrainrotData = require(Shared:WaitForChild("BrainrotData"))
 local Utils = require(Shared:WaitForChild("Utils"))
 
+local CATEGORY_COLORS = {
+    ["Común"] = Color3.fromRGB(0, 255, 0),
+    ["Poco común"] = Color3.fromRGB(0, 150, 255),
+    ["Raro"] = Color3.fromRGB(180, 0, 255),
+    ["Legendario"] = Color3.fromRGB(255, 170, 0),
+    ["Secreto"] = Color3.fromRGB(255, 0, 0)
+}
+
 local function createStatsGui(brainrot)
     if brainrot:FindFirstChild("StatsGui") then return end
 
-    -- Find a suitable part to attach the UI to if it's a model
     local adornee = brainrot
     if brainrot:IsA("Model") then
         adornee = brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart")
@@ -75,15 +82,19 @@ local function createStatsGui(brainrot)
             levelLabel.Text = "Nivel " .. level
 
             categoryLabel.Text = data.Category
-            if data.Category == "Secreto" then
-                categoryLabel.TextColor3 = Color3.new(1, 0, 0)
-            else
-                categoryLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-            end
+            categoryLabel.TextColor3 = CATEGORY_COLORS[data.Category] or Color3.new(1, 1, 1)
 
             mutationLabel.Text = data.Mutation or "Sin mutaciones"
+            if data.Mutation == "Oro" then
+                mutationLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold color
+                nameLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+            else
+                mutationLabel.TextColor3 = Color3.new(1, 1, 1)
+                nameLabel.TextColor3 = Color3.new(1, 1, 1)
+            end
 
             incomeLabel.Text = "$" .. Utils.formatNumber(income) .. "/s"
+            incomeLabel.TextColor3 = CATEGORY_COLORS[data.Category] or Color3.fromRGB(0, 255, 0)
         end
     end
 
@@ -92,18 +103,16 @@ local function createStatsGui(brainrot)
     update()
 end
 
--- Monitor Workspace for Brainrots
 Workspace.DescendantAdded:Connect(function(descendant)
     if descendant:GetAttribute("IsBrainrot") then
         createStatsGui(descendant)
     end
 end)
 
--- Handle existing brainrots
 for _, descendant in ipairs(Workspace:GetDescendants()) do
     if descendant:GetAttribute("IsBrainrot") then
         createStatsGui(descendant)
     end
 end
 
--- print("[Client] Stats GUI Manager updated with Model support.")
+-- print("[Client] Stats GUI Manager: Rarity colors enabled.")
