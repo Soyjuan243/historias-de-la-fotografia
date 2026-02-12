@@ -8,6 +8,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 1,
         BaseUpgradeCost = 10,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Common2"] = {
         Name = "Boneca Ambalabu",
@@ -15,6 +16,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 2,
         BaseUpgradeCost = 25,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Common3"] = {
         Name = "Brr Brr Patapim",
@@ -22,6 +24,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 3,
         BaseUpgradeCost = 50,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Common4"] = {
         Name = "Tripi Tropi",
@@ -29,6 +32,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 5,
         BaseUpgradeCost = 100,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Common5"] = {
         Name = "Svinino Biombondino",
@@ -36,6 +40,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 8,
         BaseUpgradeCost = 200,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
 
     -- --- COMUNES (ORO) ---
@@ -45,6 +50,7 @@ BrainrotData.Types = {
         Mutation = "Oro",
         BaseIncome = 2,
         BaseUpgradeCost = 20,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["CommonGold2"] = {
         Name = "Boneca Ambalabu (Oro)",
@@ -52,6 +58,7 @@ BrainrotData.Types = {
         Mutation = "Oro",
         BaseIncome = 4,
         BaseUpgradeCost = 50,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["CommonGold3"] = {
         Name = "Brr Brr Patapim (Oro)",
@@ -59,6 +66,7 @@ BrainrotData.Types = {
         Mutation = "Oro",
         BaseIncome = 6,
         BaseUpgradeCost = 100,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["CommonGold4"] = {
         Name = "Tripi Tropi (Oro)",
@@ -66,6 +74,7 @@ BrainrotData.Types = {
         Mutation = "Oro",
         BaseIncome = 10,
         BaseUpgradeCost = 200,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["CommonGold5"] = {
         Name = "Svinino Biombondino (Oro)",
@@ -73,6 +82,7 @@ BrainrotData.Types = {
         Mutation = "Oro",
         BaseIncome = 16,
         BaseUpgradeCost = 400,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
 
     -- --- POCO COMUNES ---
@@ -82,6 +92,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 15,
         BaseUpgradeCost = 600,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Uncommon2"] = {
         Name = "Ballerina Cappuccina",
@@ -89,6 +100,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 25,
         BaseUpgradeCost = 1200,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Uncommon3"] = {
         Name = "Chimpanzini Bananini",
@@ -96,6 +108,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 40,
         BaseUpgradeCost = 2500,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Uncommon4"] = {
         Name = "Tung Sahur",
@@ -103,6 +116,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 65,
         BaseUpgradeCost = 5000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Uncommon5"] = {
         Name = "Cappuccino Assassino",
@@ -110,6 +124,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 100,
         BaseUpgradeCost = 10000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
 
     -- --- RAROS ---
@@ -119,6 +134,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 200,
         BaseUpgradeCost = 25000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Rare2"] = {
         Name = "Frigo Camelo",
@@ -126,6 +142,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 350,
         BaseUpgradeCost = 50000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Rare3"] = {
         Name = "Trulimero Trulicina",
@@ -133,6 +150,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 600,
         BaseUpgradeCost = 100000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Rare4"] = {
         Name = "Pipi Potato",
@@ -140,6 +158,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 1000,
         BaseUpgradeCost = 200000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Rare5"] = {
         Name = "Cavallo Virtuoso",
@@ -147,6 +166,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 1800,
         BaseUpgradeCost = 450000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
 
     -- --- LEGENDARIOS ---
@@ -156,6 +176,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 3500,
         BaseUpgradeCost = 1000000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Legendary2"] = {
         Name = "Maximum Brainrot",
@@ -163,6 +184,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 6000,
         BaseUpgradeCost = 2200000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Legendary3"] = {
         Name = "Alpha Sigma",
@@ -170,6 +192,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 10000,
         BaseUpgradeCost = 5000000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Legendary4"] = {
         Name = "Skibidi God",
@@ -177,6 +200,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 18000,
         BaseUpgradeCost = 12000000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Legendary5"] = {
         Name = "Universal Brainrot",
@@ -184,6 +208,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 35000,
         BaseUpgradeCost = 30000000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
 
     -- --- SECRETOS ---
@@ -193,6 +218,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 100000,
         BaseUpgradeCost = 150000000,
+        RotationOffset = Vector3.new(0, 0, 0),
     },
     ["Secret2"] = {
         Name = "OVNI",
@@ -200,6 +226,7 @@ BrainrotData.Types = {
         Mutation = "Sin mutaciones",
         BaseIncome = 500000,
         BaseUpgradeCost = 1000000000,
+        RotationOffset = Vector3.new(0, 0, 0),
     }
 }
 

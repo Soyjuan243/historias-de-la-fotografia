@@ -21,5 +21,7 @@ createRemote("PlaceBrainrot")
 createRemote("RequestInventory")
 createRemote("CollectSpawn")
 createRemote("RemoveBrainrot")
+createRemote("SellBrainrot")
+createRemote("ExitZone")
 
 -- print("[Server] Remote events updated.")

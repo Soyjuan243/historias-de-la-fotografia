@@ -77,6 +77,31 @@ removeBtn.Text = "QUITAR"
 removeBtn.Parent = frame
 
 local currentPlatform = nil
+local currentMerchant = nil
+local currentExit = nil
+
+-- New UI for Merchant
+local merchantFrame = Instance.new("Frame")
+merchantFrame.Size = UDim2.new(0, 300, 0, 150)
+merchantFrame.Position = UDim2.new(0.5, -150, 0.65, 0)
+merchantFrame.BackgroundTransparency = 1
+merchantFrame.Visible = false
+merchantFrame.Parent = screenGui
+
+local sellHandBtn = createStyledButton("SellHandButton", UDim2.new(0, 0, 0, 0), {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 255, 100)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 0))
+})
+sellHandBtn.Text = "VENDER MANO"
+sellHandBtn.Parent = merchantFrame
+
+local exitBtn = createStyledButton("ExitButton", UDim2.new(0.85, 0, 0.05, 0), {
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 200, 200)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 100, 100))
+})
+exitBtn.Size = UDim2.new(0, 100, 0, 40)
+exitBtn.Text = "SALIR"
+exitBtn.Parent = screenGui
 
 local function getNearestPlatform()
     local character = player.Character
@@ -98,11 +123,44 @@ local function getNearestPlatform()
     return nearest
 end
 
+local function getNearestMerchant()
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return nil end
+    local hrp = character.HumanoidRootPart
+
+    local merchant = Workspace:FindFirstChild("Comprador")
+    if merchant then
+        local distance = (hrp.Position - (merchant:IsA("BasePart") and merchant.Position or merchant:GetPivot().Position)).Magnitude
+        if distance < 12 then
+            return merchant
+        end
+    end
+    return nil
+end
+
 RunService.RenderStepped:Connect(function()
     local character = player.Character
     local isHoldingSomething = character and character:FindFirstChildWhichIsA("Tool") ~= nil
 
     local nearest = getNearestPlatform()
+    local nearestMerchant = getNearestMerchant()
+
+    -- Merchant Logic
+    if nearestMerchant then
+        currentMerchant = nearestMerchant
+        local character = player.Character
+        local tool = character and character:FindFirstChildWhichIsA("Tool")
+
+        if tool and tool:GetAttribute("IsBrainrotTool") then
+            merchantFrame.Visible = true
+            frame.Visible = false
+        else
+            merchantFrame.Visible = false
+        end
+    else
+        currentMerchant = nil
+        merchantFrame.Visible = false
+    end
 
     if nearest then
         currentPlatform = nearest
@@ -149,4 +207,12 @@ removeBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- print("[Client] Interaction Manager updated with ownership checks.")
+sellHandBtn.MouseButton1Click:Connect(function()
+    Events.get("SellBrainrot"):FireServer("Hand")
+end)
+
+exitBtn.MouseButton1Click:Connect(function()
+    Events.get("ExitZone"):FireServer()
+end)
+
+-- print("[Client] Interaction Manager updated with merchant and exit logic.")

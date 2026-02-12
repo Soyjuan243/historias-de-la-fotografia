@@ -96,7 +96,9 @@ local function spawnWithinArea()
         brainrot.Name = "Spawned_" .. typeID
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
 
-        local correctionRotation = CFrame.Angles(-89.5, math.rad(180), 0)
+        local rotationOffset = data.RotationOffset or Vector3.new(0, 0, 0)
+        local correctionRotation = CFrame.Angles(-89.5 + math.rad(rotationOffset.X), math.rad(180 + rotationOffset.Y), math.rad(rotationOffset.Z))
+
         brainrot:PivotTo(correctionRotation)
 
         local modelSize = brainrot:GetExtentsSize()
