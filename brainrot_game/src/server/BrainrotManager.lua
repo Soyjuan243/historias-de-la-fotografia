@@ -15,8 +15,10 @@ function BrainrotManager.calculateStats(typeID, level)
     local data = BrainrotData.Types[typeID]
     if not data then return 0, 0 end
 
-    local income = math.floor(data.BaseIncome * (1.5 ^ (level - 1)))
-    local cost = math.floor(data.BaseUpgradeCost * (1.8 ^ (level - 1)))
+    -- Balaceado para evitar progresión exagerada
+    -- Factores ajustados para 50+ personajes
+    local income = math.floor(data.BaseIncome * (1.1 ^ (level - 1)))
+    local cost = math.floor(data.BaseUpgradeCost * (1.12 ^ (level - 1)))
 
     return income, cost
 end
@@ -27,8 +29,8 @@ local function createCollectorPad(platform)
 
     local pad = Instance.new("Part")
     pad.Name = "CollectorPad"
-    pad.Size = Vector3.new(4, 0.2, 2) -- Mas pequeño y rectangular
-    pad.Position = platform.Position + Vector3.new(0, (platform.Size.Y / 2) + 0.1, 3) -- Un poco desplazado para que no estorbe al centro
+    pad.Size = Vector3.new(4, 0.2, 2)
+    pad.Position = platform.Position + Vector3.new(0, (platform.Size.Y / 2) + 0.1, 3)
     pad.Anchored = true
     pad.CanCollide = false
     pad.Transparency = 0.5
@@ -78,7 +80,7 @@ local function createCollectorPad(platform)
                         leaderstats.Money.Value = leaderstats.Money.Value + money
                         brainrot:SetAttribute("GeneratedMoney", 0)
                     end
-                    task.wait(0.5) -- Debounce delay
+                    task.wait(0.5)
                     isCollecting = false
                 end
             end
@@ -170,9 +172,8 @@ function BrainrotManager.giveAndEquip(player, typeID, skipDataUpdate)
     tool.Name = data.Name
     tool:SetAttribute("IsBrainrotTool", true)
     tool:SetAttribute("BrainrotType", typeID)
-    tool.RequiresHandle = true -- Habilitado para que se vea el Handle
+    tool.RequiresHandle = true
 
-    -- Crear Handle (parte invisible que se agarra)
     local handle = Instance.new("Part")
     handle.Name = "Handle"
     handle.Size = Vector3.new(1, 1, 1)
@@ -180,17 +181,13 @@ function BrainrotManager.giveAndEquip(player, typeID, skipDataUpdate)
     handle.CanCollide = false
     handle.Parent = tool
 
-    -- Clonar el modelo para que se vea en la mano
     local modelTemplate = Models and Models:FindFirstChild(typeID)
     if modelTemplate then
         local model = modelTemplate:Clone()
         model.Name = "VisualModel"
-        -- Escalar un poco para que no sea gigante en la mano si es necesario
-        -- Pero por ahora solo lo posicionamos
         model:PivotTo(handle.CFrame * CFrame.Angles(0, 0, math.rad(-90)))
         model.Parent = tool
 
-        -- Soldar el modelo al Handle
         for _, part in ipairs(model:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
@@ -216,7 +213,6 @@ function BrainrotManager.giveAndEquip(player, typeID, skipDataUpdate)
     return tool
 end
 
--- ALIAS to prevent Mismatch
 function BrainrotManager.addToInventory(player, typeID)
     return BrainrotManager.giveAndEquip(player, typeID)
 end
@@ -238,11 +234,8 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
     if modelTemplate then
         brainrot = modelTemplate:Clone()
         brainrot.Name = data.Name or "Brainrot"
-
-        -- Apply correction first to get correct height (-90 on Z)
         brainrot:PivotTo(CFrame.Angles(0, 0, math.rad(-90)))
 
-        -- Calculate precise positioning on platform
         local modelSize = brainrot:GetExtentsSize()
         local platformSize = platform.Size
         local pivotOffset = (platformSize.Y / 2) + (modelSize.Y / 2)
@@ -295,7 +288,6 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
     return brainrot
 end
 
--- Remote Listeners
 Events.get("UpgradeBrainrot").OnServerEvent:Connect(function(player, platform)
     if not platform or not platform:IsDescendantOf(Workspace.Platforms) then return end
     if platform:GetAttribute("OwnerID") ~= player.UserId then return end
@@ -365,7 +357,6 @@ local function onPlayerAdded(player)
         task.wait()
     end
 
-    -- 1. Restore platform brainrots
     local states = HttpService:JSONDecode(player:GetAttribute("PlatformStates"))
     for platformName, state in pairs(states) do
         local platform = Platforms:FindFirstChild(platformName)
@@ -375,11 +366,10 @@ local function onPlayerAdded(player)
         end
     end
 
-    -- 2. Restore Backpack tools
     local ownedStr = player:GetAttribute("OwnedBrainrots") or "[]"
     local owned = HttpService:JSONDecode(ownedStr)
     for _, typeID in ipairs(owned) do
-        BrainrotManager.giveAndEquip(player, typeID, true) -- true = skip data update as it's already in data
+        BrainrotManager.giveAndEquip(player, typeID, true)
     end
 end
 
