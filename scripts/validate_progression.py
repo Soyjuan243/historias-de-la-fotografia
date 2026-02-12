@@ -6,17 +6,29 @@ def calculate_stats(base_income, base_cost, level):
 tiers = [
     ("Common1", 1, 10),
     ("CommonGold1", 2, 20),
-    ("Uncommon1", 60, 1200),
-    ("Rare1", 5000, 150000),
-    ("Legendary1", 500000, 50000000)
+    ("Uncommon1", 30, 1800),
+    ("Rare1", 600, 150000),
+    ("Legendary1", 15000, 15000000),
+    ("Secret1", 1000000, 5000000000)
 ]
 
-print("Progression Validation (Level 1, 50, 100):")
+print("Balanced Progression Validation (Level 1, 50, 100):")
 
 for name, base_inc, base_cost in tiers:
     print(f"\n--- {name} ---")
     for lvl in [1, 50, 100]:
         inc, cost = calculate_stats(base_inc, base_cost, lvl)
-        print(f"Level {lvl:3}: Income=${inc:,.0f}/s, UpgradeCost=${cost:,.0f}")
+        # Use scientific notation for very large numbers to keep it readable
+        if inc > 1e15:
+            inc_str = f"${inc:.2e}"
+        else:
+            inc_str = f"${inc:,.0f}"
+
+        if cost > 1e15:
+            cost_str = f"${cost:.2e}"
+        else:
+            cost_str = f"${cost:,.0f}"
+
+        print(f"Level {lvl:3}: Income={inc_str}/s, UpgradeCost={cost_str}")
 
 print("\nLevel 100 constraint: Checked in BrainrotManager.server.lua")
