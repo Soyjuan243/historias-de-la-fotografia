@@ -26,9 +26,11 @@ local function createStatsGui(brainrot)
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "StatsGui"
-    billboard.Size = UDim2.new(0, 200, 0, 100)
+    -- Usar Scale en lugar de Offset para que la GUI mantenga su tamaño respecto al objeto en el mundo 3D
+    -- y no se vea gigante al alejarse.
+    billboard.Size = UDim2.new(6, 0, 3, 0)
     billboard.Adornee = adornee
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.StudsOffset = Vector3.new(0, 3.5, 0)
     billboard.AlwaysOnTop = true
     billboard.MaxDistance = 60
 
@@ -86,7 +88,7 @@ local function createStatsGui(brainrot)
 
             mutationLabel.Text = data.Mutation or "Sin mutaciones"
             if data.Mutation == "Oro" then
-                mutationLabel.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold color
+                mutationLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
                 nameLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
             else
                 mutationLabel.TextColor3 = Color3.new(1, 1, 1)
@@ -114,5 +116,3 @@ for _, descendant in ipairs(Workspace:GetDescendants()) do
         createStatsGui(descendant)
     end
 end
-
--- print("[Client] Stats GUI Manager: Rarity colors enabled.")

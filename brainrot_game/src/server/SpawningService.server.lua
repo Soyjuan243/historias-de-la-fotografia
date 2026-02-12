@@ -16,7 +16,6 @@ local uncommonIDs = {"Uncommon1", "Uncommon2", "Uncommon3", "Uncommon4", "Uncomm
 local rareIDs = {"Rare1", "Rare2", "Rare3", "Rare4", "Rare5"}
 local legendaryIDs = {"Legendary1", "Legendary2", "Legendary3", "Legendary4", "Legendary5"}
 
--- Optimization: Cache spawn points
 local spawn1Parts = {}
 local spawn2Parts = {}
 
@@ -55,14 +54,12 @@ local function selectType(spawnType)
     local targetList = {}
 
     if spawnType == "spawn1" then
-        -- Spawn 1: 80% Común, 20% Poco Común
         if roll <= 80 then
             targetList = commonIDs
         else
             targetList = uncommonIDs
         end
     else
-        -- Spawn 2: 40% Común, 30% Poco Común, 20% Raro, 10% Legendario
         if roll <= 40 then
             targetList = commonIDs
         elseif roll <= 70 then
@@ -136,7 +133,8 @@ local function spawnWithinArea()
     -- UI Billboard for Name
     local nameBillboard = Instance.new("BillboardGui")
     nameBillboard.Name = "NameBillboard"
-    nameBillboard.Size = UDim2.new(0, 150, 0, 40)
+    -- Usar Scale para mantener perspectiva
+    nameBillboard.Size = UDim2.new(4, 0, 1.2, 0)
     nameBillboard.Adornee = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
     nameBillboard.AlwaysOnTop = true
     nameBillboard.StudsOffset = Vector3.new(0, 3, 0)
@@ -148,7 +146,7 @@ local function spawnWithinArea()
     nameText.Text = "¡" .. (data.Name or "???") .. "!"
     nameText.TextColor3 = Color3.new(1, 1, 1)
     nameText.Font = Enum.Font.FredokaOne
-    nameText.TextSize = 16
+    nameText.TextScaled = true
     nameText.Parent = nameBillboard
 
     local nameStroke = Instance.new("UIStroke")
@@ -158,20 +156,20 @@ local function spawnWithinArea()
     -- Timer UI
     local timerBillboard = Instance.new("BillboardGui")
     timerBillboard.Name = "TimerBillboard"
-    timerBillboard.Size = UDim2.new(0, 100, 0, 50)
+    -- Usar Scale para mantener perspectiva
+    timerBillboard.Size = UDim2.new(3, 0, 1.2, 0)
     timerBillboard.Adornee = (brainrot:IsA("Model") and (brainrot.PrimaryPart or brainrot:FindFirstChildWhichIsA("BasePart"))) or brainrot
     timerBillboard.AlwaysOnTop = true
-    timerBillboard.StudsOffset = Vector3.new(0, 5, 0)
+    timerBillboard.StudsOffset = Vector3.new(0, 4.5, 0)
     timerBillboard.Parent = brainrot
 
     local timerFrame = Instance.new("Frame")
-    timerFrame.Size = UDim2.new(0, 80, 0, 35)
-    timerFrame.Position = UDim2.new(0.5, -40, 0.5, -17)
+    timerFrame.Size = UDim2.new(1, 0, 1, 0)
     timerFrame.BackgroundTransparency = 1
     timerFrame.Parent = timerBillboard
 
     local iconFrame = Instance.new("Frame")
-    iconFrame.Size = UDim2.new(0, 30, 0, 30)
+    iconFrame.Size = UDim2.new(0.3, 0, 1, 0)
     iconFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     iconFrame.BorderSizePixel = 0
     iconFrame.Parent = timerFrame
@@ -188,13 +186,13 @@ local function spawnWithinArea()
     iconImg.Parent = iconFrame
 
     local timerText = Instance.new("TextLabel")
-    timerText.Size = UDim2.new(0.6, 0, 1, 0)
-    timerText.Position = UDim2.new(0.4, 0, 0, 0)
+    timerText.Size = UDim2.new(0.65, 0, 1, 0)
+    timerText.Position = UDim2.new(0.35, 0, 0, 0)
     timerText.BackgroundTransparency = 1
     timerText.Text = DESPAWN_TIME .. "s"
     timerText.TextColor3 = Color3.new(0, 0, 0)
     timerText.Font = Enum.Font.FredokaOne
-    timerText.TextSize = 24
+    timerText.TextScaled = true
     timerText.TextXAlignment = Enum.TextXAlignment.Left
     timerText.Parent = timerFrame
 
@@ -242,5 +240,3 @@ task.spawn(function()
         task.wait(SPAWN_INTERVAL)
     end
 end)
-
--- print("[Server] Spawning Service: Zone-based weights enabled.")

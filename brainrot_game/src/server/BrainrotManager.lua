@@ -15,15 +15,12 @@ function BrainrotManager.calculateStats(typeID, level)
     local data = BrainrotData.Types[typeID]
     if not data then return 0, 0 end
 
-    -- Balaceado para evitar progresión exagerada
-    -- Factores ajustados para 50+ personajes
     local income = math.floor(data.BaseIncome * (1.1 ^ (level - 1)))
     local cost = math.floor(data.BaseUpgradeCost * (1.12 ^ (level - 1)))
 
     return income, cost
 end
 
--- Helper to create the 'Collector' part on the platform
 local function createCollectorPad(platform)
     if platform:FindFirstChild("CollectorPad") then return end
 
@@ -38,10 +35,11 @@ local function createCollectorPad(platform)
     pad.Parent = platform
 
     local billboard = Instance.new("BillboardGui")
-    billboard.Size = UDim2.new(0, 80, 0, 30)
+    -- Usar Scale para evitar que se amplíe al alejarse
+    billboard.Size = UDim2.new(3, 0, 1, 0)
     billboard.Adornee = pad
     billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, 1, 0)
+    billboard.StudsOffset = Vector3.new(0, 1.5, 0)
     billboard.Parent = pad
 
     local text = Instance.new("TextLabel")
