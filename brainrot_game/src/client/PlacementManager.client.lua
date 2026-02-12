@@ -7,4 +7,4 @@ local player = Players.LocalPlayer
 
 -- Placement is now handled via 'E' ProximityPrompts on the server side.
 -- This script is no longer needed for Mouse clicks, but we keep it for reference or future effects.
-print("[Client] Placement Manager: Interaction moved to 'E' (ProximityPrompts) on platforms.")
+-- print("[Client] Placement Manager: Interaction moved to 'E' (ProximityPrompts) on platforms.")

@@ -203,4 +203,4 @@ task.spawn(function()
     end
 end)
 
-print("[Server] Spawning Service: Optimized area detection.")
+-- print("[Server] Spawning Service: Optimized area detection.")

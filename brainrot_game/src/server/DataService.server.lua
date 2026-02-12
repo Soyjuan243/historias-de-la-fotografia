@@ -16,7 +16,7 @@ local function loadData(player)
     end)
 
     if not success then
-        warn("Failed to load data for " .. player.Name)
+        -- warn("Failed to load data for " .. player.Name)
         data = nil
     end
 
@@ -35,13 +35,13 @@ local function loadData(player)
     local platformStates = (data and data.PlatformStates) or {}
     player:SetAttribute("PlatformStates", HttpService:JSONEncode(platformStates))
 
-    print("Data loaded for " .. player.Name)
+    -- print("Data loaded for " .. player.Name)
 end
 
 local function saveData(player)
     local leaderstats = player:FindFirstChild("leaderstats")
     if not leaderstats then
-        warn("No leaderstats found for " .. player.Name .. ", skipping save.")
+        -- warn("No leaderstats found for " .. player.Name .. ", skipping save.")
         return
     end
 
@@ -67,14 +67,14 @@ local function saveData(player)
                         TypeID = brainrot:GetAttribute("BrainrotType"),
                         Level = brainrot:GetAttribute("Level")
                     }
-                    print("[DataService] Saving platform:", platform.Name, "with", brainrot:GetAttribute("BrainrotType"))
+                    -- print("[DataService] Saving platform:", platform.Name, "with", brainrot:GetAttribute("BrainrotType"))
                 end
             end
         end
     end
 
     local owned = HttpService:JSONDecode(player:GetAttribute("OwnedBrainrots") or "[]")
-    print("[DataService] Saving", #owned, "brainrots in inventory for", player.Name)
+    -- print("[DataService] Saving", #owned, "brainrots in inventory for", player.Name)
 
     -- Use UpdateAsync for better reliability in production
     local success, err = pcall(function()
@@ -88,7 +88,7 @@ local function saveData(player)
     end)
 
     if success then
-        print("Data successfully saved for " .. player.Name)
+        -- print("Data successfully saved for " .. player.Name)
         -- Clear platforms from Workspace after save to prevent state duplication/bugs on rejoin
         for _, platform in ipairs(platformsToClear) do
             for _, child in ipairs(platform:GetChildren()) do
@@ -101,7 +101,7 @@ local function saveData(player)
             platform:SetAttribute("OwnerID", 0)
         end
     else
-        warn("Failed to save data for " .. player.Name .. ": " .. tostring(err))
+        -- warn("Failed to save data for " .. player.Name .. ": " .. tostring(err))
     end
 end
 
@@ -116,4 +116,4 @@ game:BindToClose(function()
     end
 end)
 
-print("[Server] Data Service: Production-ready logic active.")
+-- print("[Server] Data Service: Production-ready logic active.")

@@ -5,4 +5,4 @@ local ServerScriptService = game:GetService("ServerScriptService")
 -- Regular Scripts (like DataService, SpawningService) run automatically.
 require(ServerScriptService:WaitForChild("BrainrotManager"))
 
-print("[Server] Main logic initialized.")
+-- print("[Server] Main logic initialized.")

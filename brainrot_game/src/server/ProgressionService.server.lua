@@ -22,4 +22,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
-print("[Server] Progression Service started.")
+-- print("[Server] Progression Service started.")

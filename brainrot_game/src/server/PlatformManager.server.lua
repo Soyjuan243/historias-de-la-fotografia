@@ -5,7 +5,7 @@ local Workspace = game:GetService("Workspace")
 local PlatformsFolder = Workspace:FindFirstChild("Platforms")
 
 if not PlatformsFolder then
-    warn("[Server] No 'Platforms' folder found in Workspace. Please create one.")
+    -- warn("[Server] No 'Platforms' folder found in Workspace. Please create one.")
     -- Create one just in case so the game doesn't break, but don't add parts.
     PlatformsFolder = Instance.new("Folder")
     PlatformsFolder.Name = "Platforms"
@@ -22,7 +22,7 @@ local function initializePlatform(platform, index)
     platform:SetAttribute("BrainrotID", "")
     platform:SetAttribute("OwnerID", 0)
 
-    print("[Server] Initialized platform: " .. platform.Name)
+    -- print("[Server] Initialized platform: " .. platform.Name)
 end
 
 local index = 1
@@ -40,4 +40,4 @@ PlatformsFolder.ChildAdded:Connect(function(child)
     end
 end)
 
-print("[Server] Platform Initialization logic ready.")
+-- print("[Server] Platform Initialization logic ready.")

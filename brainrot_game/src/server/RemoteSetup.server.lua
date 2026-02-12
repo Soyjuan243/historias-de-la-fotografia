@@ -23,4 +23,4 @@ createRemote("CollectSpawn")
 createRemote("RemoveBrainrot")
 createRemote("SystemMessage")
 
-print("[Server] Remote events updated: Added SystemMessage.")
+-- print("[Server] Remote events updated: Added SystemMessage.")

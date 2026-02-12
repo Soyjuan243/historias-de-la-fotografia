@@ -106,4 +106,4 @@ for _, descendant in ipairs(Workspace:GetDescendants()) do
     end
 end
 
-print("[Client] Stats GUI Manager updated with Model support.")
+-- print("[Client] Stats GUI Manager updated with Model support.")

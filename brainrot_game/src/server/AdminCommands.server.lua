@@ -34,8 +34,6 @@ local function isAuthorized(player)
 end
 
 local function broadcastGlobalMessage(text)
-    print("[AdminCommand] Broadcasting global message:", text)
-
     -- Verificación de seguridad básica antes de mandar
     if not text or text == "" then return end
 
@@ -63,7 +61,6 @@ pcall(function()
             return
         end
 
-        print("[AdminCommand] Received global message from other server:", data.Text)
         Events.get("SystemMessage"):FireAllClients(data.Text)
     end)
 end)
@@ -81,7 +78,6 @@ local function spawnBrainrotInSpawn1(player, typeID)
     end
 
     if #spawnParts == 0 then
-        print("[AdminCommand] No se encontró spawn1")
         return
     end
 
@@ -209,7 +205,6 @@ local function setupTextCommands()
 
         local args = string.split(unfilteredText, " ")
         if args[2] then
-            print("[AdminCommand] /spawn detectado vía TextChatCommand por:", player.Name)
             spawnBrainrotInSpawn1(player, args[2])
         end
     end)
@@ -227,7 +222,6 @@ local function setupTextCommands()
         local args = string.split(unfilteredText, " ")
         local msgText = table.concat(args, " ", 2)
         if msgText and msgText ~= "" then
-            print("[AdminCommand] /global detectado vía TextChatCommand por:", player.Name)
             broadcastGlobalMessage("[GLOBAL] " .. player.Name .. ": " .. msgText)
         end
     end)
@@ -250,5 +244,3 @@ for _, player in ipairs(Players:GetPlayers()) do
         onChatted(player, msg)
     end)
 end
-
-print("[Server] Admin Commands: Loaded.")

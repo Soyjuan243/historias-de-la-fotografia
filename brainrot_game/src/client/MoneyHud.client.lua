@@ -109,4 +109,4 @@ end
 moneyValue.Changed:Connect(updateDisplay)
 moneyLabel.Text = "$" .. Utils.formatNumber(moneyValue.Value)
 
-print("[Client] Money HUD initialized with smooth animations.")
+-- print("[Client] Money HUD initialized with smooth animations.")
