@@ -95,12 +95,13 @@ local function spawnWithinArea()
         brainrot = modelTemplate:Clone()
         brainrot.Name = "Spawned_" .. typeID
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
-        brainrot:PivotTo(CFrame.Angles(0, 0, math.rad(-90)))
+
+        local correctionRotation = CFrame.Angles(0, math.rad(180), 0)
+        brainrot:PivotTo(correctionRotation)
 
         local modelSize = brainrot:GetExtentsSize()
         local pivotOffset = modelSize.Y / 2
 
-        local correctionRotation = CFrame.Angles(0, 0, math.rad(-90))
         brainrot:PivotTo(getRandomPositionInPart(spawnPart) * CFrame.new(0, pivotOffset, 0) * randomRotation * correctionRotation)
         brainrot.Parent = Workspace
 

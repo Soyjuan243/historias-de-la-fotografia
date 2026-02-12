@@ -44,6 +44,9 @@ local function spawnBrainrotInSpawn1(player, typeID)
         brainrot = modelTemplate:Clone()
         brainrot.Name = "AdminSpawned_" .. typeID
 
+        local correction = CFrame.Angles(0, math.rad(180), 0)
+        brainrot:PivotTo(correction)
+
         -- Calcular offset basado en el tamaño del modelo
         local modelSize = brainrot:GetExtentsSize()
         local pivotOffset = modelSize.Y / 2
@@ -53,7 +56,6 @@ local function spawnBrainrotInSpawn1(player, typeID)
         local rz = (math.random() - 0.5) * (size.Z * 0.8)
 
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
-        local correction = CFrame.Angles(0, 0, math.rad(-90)) -- Corrección solicitada
 
         local targetCFrame = spawnPart.CFrame * CFrame.new(rx, size.Y/2 + pivotOffset, rz) * randomRotation * correction
 
