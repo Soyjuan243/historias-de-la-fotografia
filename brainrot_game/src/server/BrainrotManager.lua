@@ -183,7 +183,7 @@ function BrainrotManager.giveAndEquip(player, typeID, skipDataUpdate)
     if modelTemplate then
         local model = modelTemplate:Clone()
         model.Name = "VisualModel"
-        model:PivotTo(handle.CFrame * CFrame.Angles(0, math.rad(180), 0))
+        model:PivotTo(handle.CFrame * CFrame.Angles(-89.5, math.rad(180), 0))
         model.Parent = tool
 
         for _, part in ipairs(model:GetDescendants()) do
@@ -233,7 +233,7 @@ function BrainrotManager.spawnBrainrot(typeID, platform, level)
         brainrot = modelTemplate:Clone()
         brainrot.Name = data.Name or "Brainrot"
 
-        local correctionRotation = CFrame.Angles(0, math.rad(180), 0)
+        local correctionRotation = CFrame.Angles(-89.5, math.rad(180), 0)
         brainrot:PivotTo(correctionRotation)
 
         local modelSize = brainrot:GetExtentsSize()

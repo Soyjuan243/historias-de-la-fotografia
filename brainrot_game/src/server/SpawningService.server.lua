@@ -96,7 +96,7 @@ local function spawnWithinArea()
         brainrot.Name = "Spawned_" .. typeID
         local randomRotation = CFrame.Angles(0, math.rad(math.random(0, 360)), 0)
 
-        local correctionRotation = CFrame.Angles(0, math.rad(180), 0)
+        local correctionRotation = CFrame.Angles(-89.5, math.rad(180), 0)
         brainrot:PivotTo(correctionRotation)
 
         local modelSize = brainrot:GetExtentsSize()
@@ -237,7 +237,9 @@ end
 
 task.spawn(function()
     while true do
-        spawnWithinArea()
+        for i = 1, 10 do
+            spawnWithinArea()
+        end
         task.wait(SPAWN_INTERVAL)
     end
 end)

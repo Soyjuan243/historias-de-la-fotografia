@@ -40,14 +40,14 @@ Crea una carpeta llamada **Shared** y pon estos 3:
 ## 🔄 CÓMO ROTAR PERSONAJES
 Si tus modelos de personajes miran hacia la dirección equivocada (están acostados o de espaldas), debes ajustar la rotación en los siguientes lugares del código:
 
-1.  **En las Plataformas y Mano:** Abre el script **BrainrotManager** y busca `CFrame.Angles(0, math.rad(180), 0)`.
-2.  **En los Spawns del Mundo:** Abre el script **SpawningService** y busca `CFrame.Angles(0, math.rad(180), 0)`.
-3.  **En los Spawns de Admin:** Abre el script **AdminCommands** y busca `CFrame.Angles(0, math.rad(180), 0)`.
+1.  **En las Plataformas y Mano:** Abre el script **BrainrotManager** y busca `CFrame.Angles(-89.5, math.rad(180), 0)`.
+2.  **En los Spawns del Mundo:** Abre el script **SpawningService** y busca `CFrame.Angles(-89.5, math.rad(180), 0)`.
+3.  **En los Spawns de Admin:** Abre el script **AdminCommands** y busca `CFrame.Angles(-89.5, math.rad(180), 0)`.
 
 **¿Cómo ajustar la rotación?**
-*   El estándar actual es `CFrame.Angles(0, math.rad(180), 0)`, que rota el personaje 180 grados sobre el eje Y para que mire al jugador.
-*   Si el personaje aparece acostado, asegúrate de que el tercer valor (eje Z) sea `0`.
-*   Para cambiar la dirección a la que miran, ajusta el segundo valor (eje Y).
+*   El estándar actual es `CFrame.Angles(-89.5, math.rad(180), 0)`.
+*   El valor `-89.5` en el eje X corrige la inclinación del modelo.
+*   El valor `math.rad(180)` en el eje Y hace que miren hacia el jugador.
 
 ---
 
