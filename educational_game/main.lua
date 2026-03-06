@@ -9,15 +9,15 @@ function love.load()
     math.randomseed(os.time())
 
     -- Load campaign data
-    levelManager.loadCampaignData("luau", require("data.luau_levels"))
-    levelManager.loadCampaignData("csharp", require("data.csharp_levels"))
+    levelManager.loadCampaignData("luau", require("luau_levels"))
+    levelManager.loadCampaignData("csharp", require("csharp_levels"))
 
     -- Register scenes
-    sceneManager.register("menu", require("scenes.menuScene"))
-    sceneManager.register("campaignSelect", require("scenes.campaignSelect"))
-    sceneManager.register("level", require("scenes.levelScene"))
-    sceneManager.register("exam", require("scenes.examScene"))
-    sceneManager.register("certificate", require("scenes.certificateScene"))
+    sceneManager.register("menu", require("menuScene"))
+    sceneManager.register("campaignSelect", require("campaignSelect"))
+    sceneManager.register("level", require("levelScene"))
+    sceneManager.register("exam", require("examScene"))
+    sceneManager.register("certificate", require("certificateScene"))
 
     -- Load save data
     saveSystem.load()

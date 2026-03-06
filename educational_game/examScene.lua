@@ -4,8 +4,8 @@ local levelManager = require("levelManager")
 local saveSystem = require("saveSystem")
 local puzzleSystem = require("puzzleSystem")
 local validator = require("validator")
-local ui = require("ui.base")
-local button = require("ui.button")
+local ui = require("ui_base")
+local button = require("ui_button")
 
 local examScene = {}
 local currentQuestion = 1

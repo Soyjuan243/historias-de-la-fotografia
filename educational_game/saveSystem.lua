@@ -1,5 +1,5 @@
 local saveSystem = {}
-local json = require("utils.serialize") -- Simple Lua table serializer
+local json = require("serialize") -- Simple Lua table serializer
 
 saveSystem.data = {
     xp = 0,

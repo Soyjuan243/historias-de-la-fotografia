@@ -1,7 +1,7 @@
 local sceneManager = require("sceneManager")
 local themeManager = require("themeManager")
-local ui = require("ui.base")
-local button = require("ui.button")
+local ui = require("ui_base")
+local button = require("ui_button")
 
 local certificateScene = {}
 local backBtn
