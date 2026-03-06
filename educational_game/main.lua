@@ -1,23 +1,23 @@
 -- Entry point for the Educational Platform
-local sceneManager = require("src.sceneManager")
-local themeManager = require("src.themeManager")
-local saveSystem = require("src.saveSystem")
-local levelManager = require("src.levelManager")
+local sceneManager = require("sceneManager")
+local themeManager = require("themeManager")
+local saveSystem = require("saveSystem")
+local levelManager = require("levelManager")
 
 function love.load()
     -- Initialize random seed
     math.randomseed(os.time())
 
     -- Load campaign data
-    levelManager.loadCampaignData("luau", require("src.data.luau_levels"))
-    levelManager.loadCampaignData("csharp", require("src.data.csharp_levels"))
+    levelManager.loadCampaignData("luau", require("data.luau_levels"))
+    levelManager.loadCampaignData("csharp", require("data.csharp_levels"))
 
     -- Register scenes
-    sceneManager.register("menu", require("src.scenes.menuScene"))
-    sceneManager.register("campaignSelect", require("src.scenes.campaignSelect"))
-    sceneManager.register("level", require("src.scenes.levelScene"))
-    sceneManager.register("exam", require("src.scenes.examScene"))
-    sceneManager.register("certificate", require("src.scenes.certificateScene"))
+    sceneManager.register("menu", require("scenes.menuScene"))
+    sceneManager.register("campaignSelect", require("scenes.campaignSelect"))
+    sceneManager.register("level", require("scenes.levelScene"))
+    sceneManager.register("exam", require("scenes.examScene"))
+    sceneManager.register("certificate", require("scenes.certificateScene"))
 
     -- Load save data
     saveSystem.load()

@@ -1,8 +1,8 @@
-local sceneManager = require("src.sceneManager")
-local themeManager = require("src.themeManager")
-local levelManager = require("src.levelManager")
-local ui = require("src.ui.base")
-local button = require("src.ui.button")
+local sceneManager = require("sceneManager")
+local themeManager = require("themeManager")
+local levelManager = require("levelManager")
+local ui = require("ui.base")
+local button = require("ui.button")
 
 local campaignSelect = {}
 local buttons = {}
