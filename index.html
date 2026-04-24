@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proto-X Academy | Roblox Development Startup</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Syne:wght@800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+    <div class="blob-container">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <nav class="navbar glass">
+        <div class="logo">PROTO-<span>X</span></div>
+        <ul class="nav-links">
+            <li><a href="#inicio" class="nav-item">Inicio</a></li>
+            <li><a href="#programa" class="nav-item">Programa</a></li>
+            <li><a href="#metodologia" class="nav-item">Metodología</a></li>
+            <li><a href="#proyectos" class="nav-item">Proyectos</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="btn-secondary">Login</button>
+            <button class="btn-glow">Empezar Ahora</button>
+        </div>
+    </nav>
+
+    <header id="inicio" class="hero section">
+        <div class="hero-container reveal">
+            <div class="badge-premium">ROBLOX CREATOR HUB PARTNER</div>
+            <h1 class="hero-title">Forja el Futuro del <span>Metaverso</span></h1>
+            <p class="hero-subtitle">La academia definitiva para desarrolladores de Roblox Studio. Domina Luau, Building y UI con un flujo de trabajo profesional de nivel startup.</p>
+            <div class="hero-cta">
+                <button class="btn-primary-lg">Explorar Currículo <i class="fas fa-arrow-right"></i></button>
+                <div class="social-proof">
+                    <div class="avatars">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" alt="User">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jasper" alt="User">
+                    </div>
+                    <span>+2,500 Alumnos Activos</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="programa" class="curriculum section">
+            <div class="container">
+                <div class="section-header reveal">
+                    <h2 class="section-title">Programa de Especialización</h2>
+                    <p class="section-desc">33 Módulos de alto rendimiento diseñados para llevarte de cero a Senior Developer en el ecosistema moderno de Roblox.</p>
+                </div>
+
+                <div class="filter-group reveal">
+                    <button class="filter-pill active" data-area="all">Todos los Módulos</button>
+                    <button class="filter-pill" data-area="building"><i class="fas fa-cube"></i> Building</button>
+                    <button class="filter-pill" data-area="programacion"><i class="fas fa-code"></i> Programación</button>
+                    <button class="filter-pill" data-area="diseno"><i class="fas fa-paint-brush"></i> Diseño UI</button>
+                </div>
+
+                <div id="modules-container" class="modules-grid">
+                    <!-- Dinámico vía script.js -->
+                </div>
+            </div>
+        </section>
+
+        <section id="metodologia" class="methodology section">
+            <div class="container">
+                <div class="methodology-grid">
+                    <div class="meth-text reveal">
+                        <h2 class="section-title">Metodología <br><span>"Build to Learn"</span></h2>
+                        <p>Nuestra enseñanza se basa en la creación de productos reales desde el primer minuto. No enseñamos teoría aislada; construimos sistemas complejos pieza a pieza.</p>
+                        <div class="pillars">
+                            <div class="pillar">
+                                <i class="fas fa-microchip"></i>
+                                <div>
+                                    <h4>Aprendizaje Técnico</h4>
+                                    <p>Conceptos profundos de Luau y arquitectura de software.</p>
+                                </div>
+                            </div>
+                            <div class="pillar">
+                                <i class="fas fa-vial"></i>
+                                <div>
+                                    <h4>Laboratorios de Iteración</h4>
+                                    <p>Pruebas constantes en servidores reales para entender el lag y la replicación.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="meth-visual reveal">
+                        <div class="stat-box glass">
+                            <span class="number">100%</span>
+                            <span class="label">Práctico</span>
+                        </div>
+                        <div class="stat-box glass">
+                            <span class="number">33</span>
+                            <span class="label">Módulos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="guia-instructor" class="instructor section glass-bg">
+            <div class="container">
+                <div class="section-header reveal">
+                    <h2 class="section-title">Guía del Instructor</h2>
+                    <p>Recursos exclusivos para profesores y mentores de la academia.</p>
+                </div>
+                <div class="instructor-grid">
+                    <div class="inst-card reveal">
+                        <i class="fas fa-terminal"></i>
+                        <h4>Guion General: Inicio de Clase</h4>
+                        <div class="guion-snippet">
+                            <p>"¡Hola a todos! Bienvenidos a una nueva sesión de Proto-X. Hoy no solo vamos a arrastrar bloques; vamos a entender la arquitectura detrás de un juego exitoso. Abran Roblox Studio, activen el Modo Estricto en Luau y prepárense para iterar."</p>
+                        </div>
+                    </div>
+                    <div class="inst-card reveal">
+                        <i class="fas fa-brain"></i>
+                        <h4>Metodología "Show, don't just tell"</h4>
+                        <p>El instructor debe realizar el ejercicio en vivo, explicando cada error de consola como una oportunidad de aprendizaje, no como un fallo.</p>
+                    </div>
+                    <div class="inst-card reveal">
+                        <i class="fas fa-heart"></i>
+                        <h4>Motivación</h4>
+                        <p>Recuerda a los alumnos: 'Incluso los desarrolladores de Front-Page empezaron con un script que no funcionaba'. La persistencia es la habilidad #1.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="proyectos" class="projects section">
+            <div class="container">
+                <h2 class="section-title text-center reveal">Capstones & Proyectos Reales</h2>
+                <div class="projects-grid">
+                    <!-- Dinámico o estático -->
+                    <div class="project-card-premium reveal">
+                        <div class="project-content">
+                            <span class="p-badge">MASTER PROJECT</span>
+                            <h3>Simulator Engine 2.0</h3>
+                            <p>Construye un motor completo de simulador: Pets, Rebirths, Trading y DataPersistence v2.</p>
+                            <div class="p-meta">
+                                <span><i class="fas fa-clock"></i> 40h+ de contenido</span>
+                                <span><i class="fas fa-layer-group"></i> Avanzado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="class-viewer" class="modal-overlay hidden">
+        <div class="modal-content glass">
+            <button id="close-viewer" class="modal-close">&times;</button>
+            <div id="class-data" class="modal-body">
+                <!-- Dinámico vía script.js -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-info">
+                <div class="logo">PROTO-<span>X</span></div>
+                <p>Elevando el estándar de creación en Roblox.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Academy</h4>
+                <a href="#">Building</a>
+                <a href="#">Scripting</a>
+                <a href="#">UI/UX</a>
+            </div>
+            <div class="footer-social">
+                <h4>Social</h4>
+                <div class="icons">
+                    <a href="#"><i class="fab fa-discord"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Proto-X Academy. Powered by Roblox Engine.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
