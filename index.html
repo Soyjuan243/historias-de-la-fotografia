@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Dev Academy | Proto-X</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@800&family=Syne:wght@800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">PROTO-<span>X</span> ACADEMY</div>
+        <ul class="nav-links">
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#programa">Programa</a></li>
+            <li><a href="#metodologia">Metodología</a></li>
+            <li><a href="#proyectos">Proyectos</a></li>
+        </ul>
+        <button class="btn-primary">Inscribirse Gratis</button>
+    </nav>
+
+    <header id="inicio" class="hero">
+        <div class="hero-content">
+            <h1 class="glitch-text">Domina el Multiverso de <span>Roblox</span></h1>
+            <p>La academia definitiva para convertirte en un Desarrollador Profesional. Desde el primer bloque hasta sistemas complejos en Luau.</p>
+            <div class="hero-stats">
+                <span>33 Módulos</span>
+                <span>231 Clases</span>
+                <span>5 Proyectos Reales</span>
+            </div>
+            <a href="#programa" class="btn-scroll">Explorar Currículo</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="programa" class="curriculum">
+            <h2 class="section-title">Estructura del Programa</h2>
+            <div class="area-selector">
+                <button class="filter-btn active" data-area="all">Todo</button>
+                <button class="filter-btn" data-area="building">Building</button>
+                <button class="filter-btn" data-area="programacion">Programación</button>
+                <button class="filter-btn" data-area="diseno">Diseño</button>
+            </div>
+
+            <div id="modules-container" class="modules-grid">
+                <!-- Se inyecta vía JS -->
+            </div>
+        </section>
+
+        <section id="class-viewer" class="class-viewer hidden">
+            <div class="viewer-content">
+                <button id="close-viewer" class="close-btn">&times;</button>
+                <div id="class-data">
+                    <!-- Se inyecta vía JS -->
+                </div>
+            </div>
+        </section>
+
+        <section id="metodologia" class="methodology">
+            <div class="method-card">
+                <h3>Learning by Doing</h3>
+                <p>No solo miras, construyes. Cada clase incluye un ejercicio práctico que se integra en tu portafolio personal.</p>
+            </div>
+            <div class="method-card">
+                <h3>Progresión Real</h3>
+                <p>Avanza de forma orgánica: Building -> Programación -> Diseño UI/UX.</p>
+            </div>
+        </section>
+
+        <section id="proyectos" class="projects">
+            <h2 class="section-title">Proyectos Finales</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <span class="badge">Avanzado</span>
+                    <h3>Simulator Completo</h3>
+                    <p>Crea un sistema de recolección, tiendas, mascotas y guardado de datos.</p>
+                </div>
+                <div class="project-card">
+                    <span class="badge">Intermedio</span>
+                    <h3>Obby con Efectos</h3>
+                    <p>Checkpoint avanzado, trampas dinámicas y música ambiental.</p>
+                </div>
+                <div class="project-card">
+                    <span class="badge">Experto</span>
+                    <h3>Combat PvP System</h3>
+                    <p>Raycasting para armas, Hitboxes y sistema de Scoreboard.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="guia-profesor" class="instructor-guide">
+            <h2 class="section-title">Guía del Instructor</h2>
+            <div class="guide-content">
+                <div class="guide-block">
+                    <h3>Cómo iniciar la clase</h3>
+                    <p>"¡Bienvenidos creadores! Hoy vamos a dar vida a sus ideas. No importa si cometen errores, cada bug es una oportunidad de aprender."</p>
+                </div>
+                <div class="guide-block">
+                    <h3>Metodología de Corrección</h3>
+                    <p>No des la respuesta, guía al estudiante. Pregunta: "¿Qué dice el error en el Output?"</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 Proto-X Academy. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
